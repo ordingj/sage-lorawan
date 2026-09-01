@@ -15,8 +15,10 @@
   - [x] Resolve a live uplink through both endpoints and confirm the startup inventory contains
         all 27 currently configured, enabled IHV-CENIC devices.
   - [ ] Obtain owner review and publish version `0.2.0` to Sage ECR.
-  - [ ] Create a dedicated tenant-scoped ChirpStack API key, obtain H02A's `django-token` from a
-        Sage administrator, and install both required secrets.
+  - [x] Create a dedicated read-only, tenant-scoped ChirpStack API key; install it as H02A Secret
+        `ihv-cenic-chirpstack-api`; and retain it in the ignored mode-`0600` project `.env`.
+  - [ ] Obtain H02A's Sage node-auth token from a Sage administrator and install it using the
+        conventional `django-token` Secret name expected by the deployment.
   - [ ] Deploy Tracker, confirm all active devices under H02A **LoRaWAN Devices**, and verify
         production forwarder job `5782` remains healthy.
 
