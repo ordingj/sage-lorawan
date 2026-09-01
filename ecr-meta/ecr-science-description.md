@@ -1,35 +1,35 @@
-# Sage LoRaWAN Forwarder for IHV
+# Sage LoRaWAN Forwarder for IHV-CENIC
 
 > **Status:** review candidate only. This app has not been registered with, built by, or made
 > public in the Sage Edge Code Repository (ECR), and it has not been scheduled on H02A.
 
 Planned ECR app name: `ihv-cenic-chirpstack-devices`.
 
-This Sage edge app subscribes node H02A to the existing IHV ChirpStack MQTT
+This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic and republishes every decoded scalar through PyWaggle. It does not
 change device codecs, ChirpStack integrations, or the existing ThingsBoard, InfluxDB, and
 PostgreSQL delivery paths.
 
 The stock Sage `lorawan-listener` is not a safe drop-in for this fleet. It expects decoded
-payloads shaped as `object.measurements[]`; IHV's established codecs emit canonical named
+payloads shaped as `object.measurements[]`; IHV-CENIC's established codecs emit canonical named
 fields directly under `object`. Adding a second representation to every live codec would also
 flow into the existing sinks. This forwarder instead flattens the established object only at
 the Sage boundary.
 
 ## Scientific purpose
 
-IHV's vineyard LoRaWAN network observes environmental and equipment conditions through
+IHV-CENIC's vineyard LoRaWAN network observes environmental and equipment conditions through
 distributed low-power sensors. Publishing those decoded observations through the Sage node
 makes them available with node, plugin, device, radio, and acquisition-time provenance for
 edge-to-cloud analysis. The adapter preserves the sensor's original ChirpStack timestamp and
 identity rather than assigning forwarding time, which supports comparison with the existing
-IHV data paths and avoids silently changing the scientific record.
+IHV-CENIC data paths and avoids silently changing the scientific record.
 
 ## Verified topology
 
 Read-only checks from H02A on 2026-09-01 established:
 
-- H02A is `sgt-thor-1423325056867-H02A` (`linux/arm64`) and reaches the IHV Mac Studio at
+- H02A is `sgt-thor-1423325056867-H02A` (`linux/arm64`) and reaches the IHV-CENIC Mac Studio at
   `192.168.1.200` through its site LAN.
 - DNS on H02A resolves `ihv-mac-studio.localdomain` to that address, ICMP succeeds, and TCP
   port `1883` accepts connections.
@@ -90,7 +90,8 @@ make all
 ```
 
 `make all` checks formatting and lint, runs the unit/contract tests, builds the local container,
-and executes its `--help` smoke test. It does not contact the IHV MQTT broker, Sage ECR, or H02A.
+and executes its `--help` smoke test. It does not contact the IHV-CENIC MQTT broker, Sage ECR,
+or H02A.
 
 For a no-publication MQTT canary, run the reviewed image on an authorized Sage development path
 with `--dry-run` and a separate client ID such as `ihv-sage-h02a-canary`. Do not run or install
@@ -128,6 +129,9 @@ delivery proof.
 
 ## References
 
+- [IHV-CENIC project overview](https://gitlab.nrp-nautilus.io/ihv-cenic1/ihv/-/blob/main/README.md)
+- [IHV-CENIC ChirpStack architecture and Sage H02A deployment plan](https://gitlab.nrp-nautilus.io/ihv-cenic1/ihv/-/blob/main/CHIRPSTACK.md#sage-h02a-forwarder-prepared)
+- [IHV-CENIC Sage forwarder design and validation notes](https://gitlab.nrp-nautilus.io/ihv-cenic1/ihv/-/blob/main/sage/ihv_chirpstack_forwarder/README.md)
 - [Sage LoRaWAN reference](https://sagecontinuum.org/docs/reference-guides/lorawan)
 - [Sage edge app publishing guide](https://sagecontinuum.org/docs/tutorials/edge-apps/publishing-to-ecr)
 - [Sage edge app testing guide](https://sagecontinuum.org/docs/tutorials/edge-apps/testing-an-edge-app)

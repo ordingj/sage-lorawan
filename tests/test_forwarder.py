@@ -1,4 +1,4 @@
-"""Protect the IHV ChirpStack-to-Sage payload and MQTT contracts."""
+"""Protect the IHV-CENIC ChirpStack-to-Sage payload and MQTT contracts."""
 
 from __future__ import annotations
 

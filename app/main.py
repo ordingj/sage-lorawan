@@ -1,4 +1,4 @@
-"""Run the IHV ChirpStack-to-Sage MQTT forwarder."""
+"""Run the IHV-CENIC ChirpStack-to-Sage MQTT forwarder."""
 
 from __future__ import annotations
 
