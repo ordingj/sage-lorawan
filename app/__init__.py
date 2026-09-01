@@ -1,1 +1,1 @@
-"""Runtime package for the IHV-CENIC ChirpStack Sage forwarder."""
+"""Runtime package for IHV-CENIC ChirpStack Sage forwarding and inventory."""

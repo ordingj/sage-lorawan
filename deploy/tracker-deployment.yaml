@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ihv-cenic-chirpstack-tracker
+  namespace: default
+  labels:
+    app.kubernetes.io/name: ihv-cenic-chirpstack-tracker
+    app.kubernetes.io/part-of: ihv-cenic-chirpstack-devices
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ihv-cenic-chirpstack-tracker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ihv-cenic-chirpstack-tracker
+        app.kubernetes.io/part-of: ihv-cenic-chirpstack-devices
+    spec:
+      priorityClassName: wes-high-priority
+      nodeSelector:
+        zone: core
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: tracker
+          image: registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - --mode
+            - tracker
+            - --mqtt-host
+            - 192.168.1.200
+            - --mqtt-port
+            - "1883"
+            - --mqtt-topic
+            - application/+/device/+/event/up
+            - --mqtt-client-id
+            - ihv-sage-h02a-tracker
+            - --chirpstack-api-url
+            - http://137.164.38.253:8080
+            - --chirpstack-api-key-file
+            - /run/secrets/chirpstack/api-key
+            - --chirpstack-tenant-id
+            - 68523723-483d-484e-a36b-8ae3ddc3fcd3
+            - --sage-api-url
+            - https://auth.sagecontinuum.org
+            - --sage-node-token-file
+            - /run/secrets/sage/token
+          envFrom:
+            - configMapRef:
+                name: wes-identity
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 150m
+              memory: 192Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+          volumeMounts:
+            - name: chirpstack-api-key
+              mountPath: /run/secrets/chirpstack
+              readOnly: true
+            - name: sage-node-token
+              mountPath: /run/secrets/sage
+              readOnly: true
+      volumes:
+        - name: chirpstack-api-key
+          secret:
+            secretName: ihv-cenic-chirpstack-api
+            items:
+              - key: api-key
+                path: api-key
+        - name: sage-node-token
+          secret:
+            secretName: django-token
+            items:
+              - key: token
+                path: token
