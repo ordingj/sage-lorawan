@@ -18,5 +18,8 @@
 
 ### Deployment
 
-- Owner approval for ECR publication was granted on 2026-09-01. No ECR app has yet been
-  registered, built, made public, or scheduled.
+- Owner approval for ECR publication was granted on 2026-09-01. ECR version `0.1.0` was built
+  for AMD64 and ARM64 under `ordingj` and made public.
+- H02A dry-run job `5779` subscribed to the IHV-CENIC MQTT broker, decoded live SDI-12 and soil
+  sensor uplinks without publication errors, and was removed after verification. Production is
+  not yet scheduled.

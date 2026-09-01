@@ -1,10 +1,10 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** approved publication candidate. The public GitHub source mirror is prepared, but
-> this app has not yet been registered with or built by the Sage Edge Code Repository (ECR),
-> and it has not been scheduled on H02A.
+> **Status:** version `0.1.0` is built and public in the Sage Edge Code Repository (ECR).
+> A bounded dry-run canary passed on H02A and was removed; the production subscriber has not
+> been scheduled.
 
-Planned ECR app name: `ihv-cenic-chirpstack-devices`.
+ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.0`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic and republishes every decoded scalar through PyWaggle. It does not
@@ -39,6 +39,12 @@ Read-only checks from H02A on 2026-09-01 established:
   nanosecond timestamp, device name, frame counter, and canonical decoded object.
 - The Sage portal and Data API report current H02A system data, but the job inventory contained
   no existing H02A edge job at the time of inspection.
+
+The ECR build used reviewed source commit `ab0677bca986a4365e40e4e1cddc4acb9c07f313`
+for both `linux/amd64` and `linux/arm64`. On 2026-09-01, dry-run job `5779` pulled the ARM64
+image on H02A, subscribed at QoS 1, and decoded live uplinks from multiple IHV-CENIC devices,
+including SDI-12 and soil sensors. Its logs reported successful measurement batches without
+publishing them to Sage. The job was then removed and its pod was verified absent.
 
 Recheck the address and port from H02A before deployment; they are observed runtime facts, not
 configuration discovery:
@@ -108,14 +114,12 @@ current publishing workflow. The `homepage` in `sage.yaml` points to that exact 
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
 `job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template.
-Publication approval was granted on 2026-09-01. The remaining sequence is:
+Publication approval was granted on 2026-09-01. ECR version `0.1.0` and the bounded canary are
+complete. The remaining production sequence is:
 
-1. Register and build version `0.1.0` in ECR. ECR versions cannot be reused.
-2. Confirm the ECR owner/name and update the image in `job.yaml` if it differs.
-3. Make the app public only when it is ready to schedule.
-4. Run a bounded canary with `--dry-run --mqtt-client-id ihv-sage-h02a-canary`.
-5. Suspend the canary before starting the production job with `ihv-sage-h02a`; only one running
-   subscriber may use a given client ID.
+1. Submit `job.yaml` to start the production subscriber with client ID `ihv-sage-h02a`.
+2. Confirm H02A logs show a successful MQTT subscription and Sage publications without errors.
+3. Verify matching records in the Sage Data API and H02A Latest Records page.
 
 Verify the production path through both the Sage Data API and the H02A Latest Records page:
 

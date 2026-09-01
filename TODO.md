@@ -8,5 +8,5 @@
   - [x] Add an H02A-only job template and ECR review metadata.
   - [x] Obtain owner review and explicit approval for Sage ECR publication.
   - [x] Create the reviewed public `ordingj/sage-lorawan` GitHub source mirror required by ECR.
-  - [ ] Register/build version `0.1.0`, run a bounded dry-run canary, and verify logs.
+  - [x] Register/build version `0.1.0`, run a bounded dry-run canary, and verify logs.
   - [ ] Schedule the production subscriber and verify matching records in the Sage Data API.
