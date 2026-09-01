@@ -1,7 +1,8 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** review candidate only. This app has not been registered with, built by, or made
-> public in the Sage Edge Code Repository (ECR), and it has not been scheduled on H02A.
+> **Status:** approved publication candidate. The public GitHub source mirror is prepared, but
+> this app has not yet been registered with or built by the Sage Edge Code Repository (ECR),
+> and it has not been scheduled on H02A.
 
 Planned ECR app name: `ihv-cenic-chirpstack-devices`.
 
@@ -101,12 +102,13 @@ packages directly on the node host.
 
 The canonical development repository is
 [`ihv-cenic1/sage-lorawan`](https://gitlab.nrp-nautilus.io/ihv-cenic1/sage-lorawan).
-Sage's current ECR instructions require a public GitHub repository URL when creating an app.
-Before registration, either confirm that ECR now accepts this GitLab URL or create a reviewed
-public GitHub mirror and update `homepage` in `sage.yaml` to that exact source URL.
+Sage's ECR source is the public
+[`ordingj/sage-lorawan`](https://github.com/ordingj/sage-lorawan) mirror, as required by the
+current publishing workflow. The `homepage` in `sage.yaml` points to that exact source. Keep
+the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
 `job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template.
-After explicit owner approval:
+Publication approval was granted on 2026-09-01. The remaining sequence is:
 
 1. Register and build version `0.1.0` in ECR. ECR versions cannot be reused.
 2. Confirm the ECR owner/name and update the image in `job.yaml` if it differs.

@@ -6,7 +6,7 @@
   - [x] Verify H02A can reach the existing IHV-CENIC MQTT broker and observe a live uplink.
   - [x] Prepare the standalone, multi-architecture Sage edge app and delivery-contract tests.
   - [x] Add an H02A-only job template and ECR review metadata.
-  - [ ] Obtain owner review and explicit approval for Sage ECR publication.
-  - [ ] Confirm ECR accepts the GitLab source or create a reviewed public GitHub mirror.
+  - [x] Obtain owner review and explicit approval for Sage ECR publication.
+  - [x] Create the reviewed public `ordingj/sage-lorawan` GitHub source mirror required by ECR.
   - [ ] Register/build version `0.1.0`, run a bounded dry-run canary, and verify logs.
   - [ ] Schedule the production subscriber and verify matching records in the Sage Data API.

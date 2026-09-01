@@ -9,6 +9,7 @@
 - Persistent QoS-1 delivery, source timestamp and device metadata preservation, and dry-run mode.
 - Separate H02A canary/production job templates, ECR review metadata, focused tests, GitLab CI,
   and local container checks.
+- Public `ordingj/sage-lorawan` GitHub source mirror for the ECR publishing workflow.
 
 ### Changed
 
@@ -17,5 +18,5 @@
 
 ### Deployment
 
-- No ECR app was registered, built, made public, or scheduled. Those actions require explicit
-  owner review and approval.
+- Owner approval for ECR publication was granted on 2026-09-01. No ECR app has yet been
+  registered, built, made public, or scheduled.
