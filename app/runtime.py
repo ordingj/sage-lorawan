@@ -20,7 +20,7 @@ class SagePublisher(Protocol):
         value: bool | int | float | str,
         *,
         timestamp: int,
-        meta: dict[str, bool | int | float | str],
+        meta: dict[str, str],
     ) -> Any:
         """Publish one timestamped measurement to the Sage node."""
 

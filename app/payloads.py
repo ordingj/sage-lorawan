@@ -48,7 +48,7 @@ class SageMeasurement:
     name: str
     value: bool | int | float | str
     timestamp_ns: int
-    metadata: Mapping[str, bool | int | float | str]
+    metadata: Mapping[str, str]
 
 
 def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ...]:
@@ -118,8 +118,8 @@ def _parse_rfc3339_ns(value: str) -> int:
 def _measurement_metadata(
     payload: Mapping[str, Any],
     device_info: Mapping[str, Any],
-) -> dict[str, bool | int | float | str]:
-    metadata: dict[str, bool | int | float | str] = {"lns": "ihv_chirpstack"}
+) -> dict[str, str]:
+    metadata: dict[str, str] = {"lns": "ihv_chirpstack"}
     for field in _DEVICE_INFO_FIELDS:
         value = device_info.get(field)
         if value is not None:
@@ -144,9 +144,9 @@ def _measurement_metadata(
     best_rssi = _best_receiver_value(payload.get("rxInfo"), "rssi")
     best_snr = _best_receiver_value(payload.get("rxInfo"), "snr")
     if best_rssi is not None:
-        metadata["rssi"] = best_rssi
+        metadata["rssi"] = _metadata_scalar(best_rssi, "rxInfo.rssi")
     if best_snr is not None:
-        metadata["snr"] = best_snr
+        metadata["snr"] = _metadata_scalar(best_snr, "rxInfo.snr")
     return metadata
 
 
@@ -182,11 +182,15 @@ def _flatten_scalars(
     raise PayloadError(f"decoded field {prefix} has unsupported type {type(value).__name__}")
 
 
-def _metadata_scalar(value: object, field: str) -> bool | int | float | str:
-    if isinstance(value, bool | int | str):
+def _metadata_scalar(value: object, field: str) -> str:
+    if isinstance(value, str):
         return value
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
     if isinstance(value, float) and math.isfinite(value):
-        return value
+        return str(value)
     raise PayloadError(f"ChirpStack metadata {field} must be a finite scalar")
 
 

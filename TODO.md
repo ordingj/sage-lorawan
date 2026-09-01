@@ -9,4 +9,7 @@
   - [x] Obtain owner review and explicit approval for Sage ECR publication.
   - [x] Create the reviewed public `ordingj/sage-lorawan` GitHub source mirror required by ECR.
   - [x] Register/build version `0.1.0`, run a bounded dry-run canary, and verify logs.
+  - [x] Submit production job `5780`, capture the PyWaggle metadata failure, and suspend it.
+  - [x] Prepare version `0.1.1` with string-only metadata and a regression contract test.
+  - [ ] Obtain owner review and publish version `0.1.1` to ECR.
   - [ ] Schedule the production subscriber and verify matching records in the Sage Data API.

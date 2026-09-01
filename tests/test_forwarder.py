@@ -62,10 +62,13 @@ def test_payload_flattens_existing_object_and_preserves_source_identity() -> Non
     metadata = records[0].metadata
     assert metadata["deviceName"] == "SDI-12-LS-US915-1"
     assert metadata["devEui"] == "a8404111f05c5ef9"
-    assert metadata["fCnt"] == 9921
+    assert metadata["fCnt"] == "9921"
     assert metadata["block_name_tag"] == "Block 1"
-    assert metadata["rssi"] == -91
-    assert metadata["snr"] == 9.0
+    assert metadata["rssi"] == "-91"
+    assert metadata["snr"] == "9.0"
+    assert metadata["adr"] == "true"
+    assert metadata["confirmed"] == "false"
+    assert all(isinstance(value, str) for value in metadata.values())
     assert "data" not in metadata
 
 
@@ -157,7 +160,7 @@ class _FakeMqtt:
 class _Publisher:
     def __init__(self, *, fail: bool = False) -> None:
         self.fail = fail
-        self.calls: list[tuple[str, object, int, dict[str, object]]] = []
+        self.calls: list[tuple[str, object, int, dict[str, str]]] = []
 
     def publish(
         self,
@@ -165,10 +168,14 @@ class _Publisher:
         value: object,
         *,
         timestamp: int,
-        meta: dict[str, object],
+        meta: dict[str, str],
     ) -> None:
         if self.fail:
             raise ConnectionError("Sage unavailable")
+        if not all(
+            isinstance(key, str) and isinstance(value, str) for key, value in meta.items()
+        ):
+            raise TypeError("Meta must be a dictionary of strings to strings.")
         self.calls.append((name, value, timestamp, meta))
 
 
@@ -252,15 +259,18 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "app.main"]' in dockerfile
     assert "__pycache__/" in dockerignore
     assert manifest["name"] == "ihv-cenic-chirpstack-devices"
-    assert manifest["version"] == "0.1.0"
+    assert manifest["version"] == "0.1.1"
     assert manifest["source"]["architectures"] == ["linux/amd64", "linux/arm64"]
     assert job["nodes"] == {"H02A": True}
     plugin = job["plugins"][0]
     assert plugin["name"] == "ihv-cenic-chirpstack-devices"
-    assert "ihv-cenic-chirpstack-devices:0.1.0" in plugin["pluginSpec"]["image"]
+    assert "ihv-cenic-chirpstack-devices:0.1.1" in plugin["pluginSpec"]["image"]
     assert "192.168.1.200" in plugin["pluginSpec"]["args"]
     assert "ihv-sage-h02a" in plugin["pluginSpec"]["args"]
     canary_args = canary_job["plugins"][0]["pluginSpec"]["args"]
+    assert (
+        "ihv-cenic-chirpstack-devices:0.1.1" in canary_job["plugins"][0]["pluginSpec"]["image"]
+    )
     assert canary_job["nodes"] == {"H02A": True}
     assert "ihv-sage-h02a-canary" in canary_args
     assert "--dry-run" in canary_args

@@ -1,5 +1,5 @@
 PYTHON ?= .venv/bin/python
-IMAGE ?= ihv-cenic-chirpstack-devices:0.1.0
+IMAGE ?= ihv-cenic-chirpstack-devices:0.1.1
 
 .PHONY: all format lint test docker-build docker-smoke
 

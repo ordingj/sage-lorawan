@@ -1,10 +1,11 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
 > **Status:** version `0.1.0` is built and public in the Sage Edge Code Repository (ECR).
-> A bounded dry-run canary passed on H02A and was removed; the production subscriber has not
-> been scheduled.
+> Production job `5780` exposed a PyWaggle metadata-type mismatch and was suspended. Version
+> `0.1.1` fixes the contract and is awaiting owner review before ECR publication.
 
-ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.0`.
+Current ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.0`.
+The reviewed patch candidate and job templates target version `0.1.1`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic and republishes every decoded scalar through PyWaggle. It does not
@@ -79,8 +80,10 @@ For example:
 
 Every record preserves the ChirpStack nanosecond timestamp. Metadata includes `deviceName`,
 lowercase `devEui`, tenant/application/profile identity, tags with a `_tag` suffix,
-deduplication ID, frame counter, FPort, data rate, and the best receiver RSSI/SNR. Device
-variables and raw payload bytes are never published.
+deduplication ID, frame counter, FPort, data rate, and the best receiver RSSI/SNR. Metadata
+values are serialized as strings because that is the PyWaggle publication contract; decoded
+measurement values retain their bool, number, or string types. Device variables and raw payload
+bytes are never published.
 
 Malformed JSON, missing identity/timestamp/object fields, non-finite values, unsupported value
 types, and normalized-name collisions are rejected as permanent payload errors. They are logged
@@ -115,11 +118,16 @@ the mirror's `main` branch synchronized with reviewed GitLab commits before ever
 
 `job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template.
 Publication approval was granted on 2026-09-01. ECR version `0.1.0` and the bounded canary are
-complete. The remaining production sequence is:
+complete. Production job `5780` connected to MQTT but was suspended after PyWaggle rejected
+numeric and boolean metadata. Version `0.1.1` serializes every metadata value and adds a
+regression boundary that rejects the same invalid shape as PyWaggle. The remaining production
+sequence is:
 
-1. Submit `job.yaml` to start the production subscriber with client ID `ihv-sage-h02a`.
-2. Confirm H02A logs show a successful MQTT subscription and Sage publications without errors.
-3. Verify matching records in the Sage Data API and H02A Latest Records page.
+1. Obtain owner review of the version `0.1.1` patch.
+2. Publish version `0.1.1` to ECR and rerun the bounded dry-run canary.
+3. Replace suspended job `5780` with `job.yaml` using client ID `ihv-sage-h02a`.
+4. Confirm H02A logs show a successful MQTT subscription and Sage publications without errors.
+5. Verify matching records in the Sage Data API and H02A Latest Records page.
 
 Verify the production path through both the Sage Data API and the H02A Latest Records page:
 
