@@ -1,0 +1,13 @@
+name: "ihv-cenic-chirpstack-devices"
+version: "0.1.0"
+description: "Forward decoded IHV ChirpStack MQTT uplinks through a Sage node"
+keywords: "LoRaWAN, ChirpStack, MQTT, vineyard"
+authors: "Joseph Ording, IHV CENIC"
+collaborators: ""
+funding: ""
+license: ""
+homepage: "https://gitlab.nrp-nautilus.io/ihv-cenic1/sage-lorawan"
+source:
+  architectures:
+    - "linux/amd64"
+    - "linux/arm64"

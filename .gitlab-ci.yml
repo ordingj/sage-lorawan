@@ -1,0 +1,13 @@
+image: python:3.12-alpine3.22
+
+stages:
+  - validate
+
+validate:
+  stage: validate
+  before_script:
+    - python -m pip install --no-cache-dir -r requirements-dev.txt
+  script:
+    - python -m ruff format --check app tests
+    - python -m ruff check app tests
+    - python -m pytest -W error

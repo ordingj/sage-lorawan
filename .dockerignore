@@ -1,0 +1,13 @@
+.DS_Store
+.git/
+.gitignore
+.gitlab-ci.yml
+.pytest_cache/
+.ruff_cache/
+.venv/
+CHANGELOG.md
+TODO.md
+__pycache__/
+*.py[cod]
+ecr-meta/
+tests/

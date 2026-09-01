@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 95
+src = ["app", "tests"]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+
+[tool.ruff.format]
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+addopts = "--maxfail=1"
+testpaths = ["tests"]

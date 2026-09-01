@@ -1,0 +1,21 @@
+name: ihv-cenic-chirpstack-devices-h02a
+plugins:
+  - name: ihv-cenic-chirpstack-devices
+    pluginSpec:
+      image: registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.0
+      args:
+        - --mqtt-host
+        - 192.168.1.200
+        - --mqtt-port
+        - "1883"
+        - --mqtt-topic
+        - application/+/device/+/event/up
+        - --mqtt-client-id
+        - ihv-sage-h02a
+nodeTags: []
+nodes:
+  H02A: true
+scienceRules:
+  - 'schedule("ihv-cenic-chirpstack-devices"): cronjob("ihv-cenic-chirpstack-devices", "* * * * *")'
+successCriteria:
+  - WallClock("3650days")
