@@ -1,11 +1,9 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** version `0.1.0` is built and public in the Sage Edge Code Repository (ECR).
-> Production job `5780` exposed a PyWaggle metadata-type mismatch and was suspended. Version
-> `0.1.1` fixes the contract and is awaiting owner review before ECR publication.
+> **Status:** version `0.1.1` is built and public in the Sage Edge Code Repository (ECR).
+> Canary job `5781` passed and was suspended; production job `5782` is active on H02A.
 
-Current ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.0`.
-The reviewed patch candidate and job templates target version `0.1.1`.
+ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.1`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic and republishes every decoded scalar through PyWaggle. It does not
@@ -41,11 +39,11 @@ Read-only checks from H02A on 2026-09-01 established:
 - The Sage portal and Data API report current H02A system data, but the job inventory contained
   no existing H02A edge job at the time of inspection.
 
-The ECR build used reviewed source commit `ab0677bca986a4365e40e4e1cddc4acb9c07f313`
-for both `linux/amd64` and `linux/arm64`. On 2026-09-01, dry-run job `5779` pulled the ARM64
-image on H02A, subscribed at QoS 1, and decoded live uplinks from multiple IHV-CENIC devices,
-including SDI-12 and soil sensors. Its logs reported successful measurement batches without
-publishing them to Sage. The job was then removed and its pod was verified absent.
+ECR version `0.1.1` was built for both `linux/amd64` and `linux/arm64` from reviewed source
+commit `277f3af1039eac9fd271ee844674f165e79f1eb5`. On 2026-09-01, dry-run job `5781` pulled the
+ARM64 image on H02A, stayed healthy with zero restarts, and decoded live soil, SDI-12, CO2, and
+other IHV-CENIC uplinks. It was suspended after verification. Production job `5782` then
+subscribed at QoS 1 and began publishing through the same image without errors.
 
 Recheck the address and port from H02A before deployment; they are observed runtime facts, not
 configuration discovery:
@@ -117,17 +115,22 @@ current publishing workflow. The `homepage` in `sage.yaml` points to that exact 
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
 `job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template.
-Publication approval was granted on 2026-09-01. ECR version `0.1.0` and the bounded canary are
-complete. Production job `5780` connected to MQTT but was suspended after PyWaggle rejected
-numeric and boolean metadata. Version `0.1.1` serializes every metadata value and adds a
-regression boundary that rejects the same invalid shape as PyWaggle. The remaining production
-sequence is:
+Publication approval was granted on 2026-09-01. Initial production job `5780` connected to MQTT
+but was suspended after PyWaggle rejected numeric and boolean metadata. Version `0.1.1`
+serializes every metadata value and adds a regression boundary that rejects the same invalid
+shape as PyWaggle. After canary job `5781` passed, production job `5782` was scheduled with the
+stable client ID `ihv-sage-h02a`.
 
-1. Obtain owner review of the version `0.1.1` patch.
-2. Publish version `0.1.1` to ECR and rerun the bounded dry-run canary.
-3. Replace suspended job `5780` with `job.yaml` using client ID `ihv-sage-h02a`.
-4. Confirm H02A logs show a successful MQTT subscription and Sage publications without errors.
-5. Verify matching records in the Sage Data API and H02A Latest Records page.
+Production verification established:
+
+- The H02A pod remained running with zero restarts while its logs reported the QoS-1
+  subscription and successful measurement batches without publication errors.
+- An initial 10-minute Sage Data API query returned 394 decoded records across 23 LoRa devices.
+  A representative record preserved the ChirpStack timestamp and carried `deviceName`,
+  lowercase `devEui`, `fCnt`, radio metadata, H02A identity, task name, and the exact `0.1.1`
+  plugin image.
+- The H02A Latest Records page displayed current `batv`, `data_sum`, `co2`, `humidity`,
+  `pressure`, `temperature`, and other values with their LoRa device names.
 
 Verify the production path through both the Sage Data API and the H02A Latest Records page:
 

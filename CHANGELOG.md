@@ -28,5 +28,9 @@
 - H02A dry-run job `5779` subscribed to the IHV-CENIC MQTT broker, decoded live SDI-12 and soil
   sensor uplinks without publication errors, and was removed after verification.
 - Production job `5780` subscribed successfully but exposed the metadata-type mismatch on its
-  first uplink. It was suspended to stop the restart loop; version `0.1.1` is prepared for owner
-  review and has not been published to ECR.
+  first uplink and was suspended to stop the restart loop.
+- ECR version `0.1.1` was built for AMD64 and ARM64 from reviewed commit `277f3af`. H02A dry-run
+  job `5781` decoded live uplinks with zero restarts and was suspended after verification.
+- Production job `5782` is running version `0.1.1` on H02A. Its logs show successful QoS-1
+  publication, the initial Data API query returned 394 records from 23 LoRa devices with source
+  identity metadata, and the H02A Latest Records page displays current device measurements.

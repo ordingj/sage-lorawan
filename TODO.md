@@ -1,8 +1,6 @@
 # TODO
 
-<!-- working-on: configure chirpstack/mqtt to also output to sage node h02a -->
-
-- [/] Configure ChirpStack/MQTT to also output to Sage node H02A.
+- [x] Configure ChirpStack/MQTT to also output to Sage node H02A.
   - [x] Verify H02A can reach the existing IHV-CENIC MQTT broker and observe a live uplink.
   - [x] Prepare the standalone, multi-architecture Sage edge app and delivery-contract tests.
   - [x] Add an H02A-only job template and ECR review metadata.
@@ -11,5 +9,5 @@
   - [x] Register/build version `0.1.0`, run a bounded dry-run canary, and verify logs.
   - [x] Submit production job `5780`, capture the PyWaggle metadata failure, and suspend it.
   - [x] Prepare version `0.1.1` with string-only metadata and a regression contract test.
-  - [ ] Obtain owner review and publish version `0.1.1` to ECR.
-  - [ ] Schedule the production subscriber and verify matching records in the Sage Data API.
+  - [x] Obtain owner review and publish version `0.1.1` to ECR.
+  - [x] Schedule production job `5782` and verify matching Sage Data API and Latest Records data.
