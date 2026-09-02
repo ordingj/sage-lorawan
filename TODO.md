@@ -1,11 +1,35 @@
 # TODO
 
-<!-- working-on: Wire Sage's ChirpStack Tracker on H02A to the existing IHV-CENIC MQTT and ChirpStack API endpoints without deploying a second network server. -->
+## Sage Rollout Finalization
 
-## Tracker Integration
+- [ ] Finalize the Sage H02A rollout for IHV-CENIC ChirpStack devices.
+  - [ ] Ask a Sage administrator to retrieve or rotate H02A's server-side node-auth token, then
+        install it as H02A Secret `django-token`, key `token`, without exposing the value in Git,
+        shell arguments, logs, or command history.
+  - [ ] Re-run `make all`, review the complete version `0.2.0` source and deployment diff, and
+        obtain explicit owner approval before any push, ECR publication, or Tracker deployment.
+  - [ ] Push the approved `main` branch to the canonical `ihv-cenic1/sage-lorawan` GitLab project
+        and synchronize the public `ordingj/sage-lorawan` GitHub mirror used by Sage ECR.
+  - [ ] Publish `ordingj/ihv-cenic-chirpstack-devices:0.2.0` to Sage ECR and verify that its
+        immutable image digest supports both `linux/amd64` and `linux/arm64`.
+  - [ ] Apply `deploy/tracker-deployment.yaml` on H02A; verify rollout completion, zero restarts,
+        successful startup inventory reconciliation, and continued QoS-1 live refreshes.
+  - [ ] Compare H02A **LoRaWAN Devices** against a fresh enabled-device ChirpStack inventory by
+        exact DevEUI, count, and current connection timestamp; the 2026-09-01 baseline is 27
+        devices, but the live inventory at rollout time is authoritative.
+  - [ ] Confirm Tracker remains inventory-only: no root/session keys or device addresses entered
+        Sage, no second ChirpStack was installed, and gateway packet forwarding was not changed.
+  - [ ] Confirm production forwarder job `5782` remains healthy on version `0.1.1`, continues
+        publishing current Data API records, and still shows LoRa Device Name while the optional
+        conventional Sensor column remains blank as documented.
+  - [ ] Record the reviewed commits, ECR digest, Tracker deployment proof, final device count,
+        and forwarder regression evidence in `README.md`, `CHANGELOG.md`, and this TODO; then mark
+        the rollout complete.
 
-- [/] Wire Sage's ChirpStack Tracker on H02A to the existing IHV-CENIC MQTT and ChirpStack API
-      endpoints without deploying a second network server.
+## Completed Preparation
+
+- [x] Prepare Sage's ChirpStack Tracker for H02A against the existing IHV-CENIC MQTT and
+      ChirpStack API endpoints without deploying a second network server.
   - [x] Confirm Sage portal inventory uses `lorawanconnections` and does not require LoRaWAN key
         records.
   - [x] Add a ChirpStack v4 API-key Tracker mode that registers hardware, devices, and H02A
@@ -14,13 +38,8 @@
   - [x] Verify H02A reaches both IHV-CENIC MQTT port `1883` and ChirpStack API port `8080`.
   - [x] Resolve a live uplink through both endpoints and confirm the startup inventory contains
         all 27 currently configured, enabled IHV-CENIC devices.
-  - [ ] Obtain owner review and publish version `0.2.0` to Sage ECR.
   - [x] Create a dedicated read-only, tenant-scoped ChirpStack API key; install it as H02A Secret
         `ihv-cenic-chirpstack-api`; and retain it in the ignored mode-`0600` project `.env`.
-  - [ ] Obtain H02A's Sage node-auth token from a Sage administrator and install it using the
-        conventional `django-token` Secret name expected by the deployment.
-  - [ ] Deploy Tracker, confirm all active devices under H02A **LoRaWAN Devices**, and verify
-        production forwarder job `5782` remains healthy.
 
 - [x] Configure ChirpStack/MQTT to also output to Sage node H02A.
   - [x] Verify H02A can reach the existing IHV-CENIC MQTT broker and observe a live uplink.
