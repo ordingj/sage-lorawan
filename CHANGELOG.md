@@ -36,6 +36,8 @@
 - Version `0.2.5` retries transient DNS, rate-limit, and Sage server failures with bounded
   exponential backoff. The safeguard was added after the first H02A Tracker deployment exposed
   intermittent external DNS resolution and entered a restart loop during startup reconciliation.
+  The H02A deployment also uses explicit public resolvers after a 30-lookup node probe completed
+  without a failure through that isolated path.
 - Version `0.2.4` applies the full documented sensor-sentinel policy before Sage publication:
   unsupported SDI-12 ports and `BatV == 7.2`, disconnected Dragino soil probes, TEROS-22 error
   codes, and Milesight EM500 CO2 and pressure sentinels no longer become physical measurements.
@@ -52,6 +54,18 @@
 
 ### Deployment
 
+- Version `0.2.5` was built by Jenkins build `8` from commit `78f7ab1` for AMD64 and ARM64.
+  Its manifest-list digest is
+  `sha256:587d318403966ad82010378fbda6cae81c37094982a37e0bd2e51c0d05c6f498`.
+- H02A canary job `5791` ran for 10 minutes 50 seconds with 53 decoded uplinks, zero invalid
+  sentinel measurements, runtime failures, or restarts before suspension. Its lingering pod and
+  orphaned removed-canary pod `5785` were deleted from the node.
+- Production job `5789` was suspended and replaced by job `5792` on `0.2.5`. The initial Data
+  API proof returned 110 records from 17 uplinks across 13 devices with complete identity
+  metadata, four false availability records, and zero filtered sentinel records.
+- Tracker's accepted `0.2.5` pod used the published digest, reconciled and live-refreshed all 27
+  enabled devices with zero restarts, and produced an exact 27-connection Sage inventory with no
+  missing/extra DevEUIs, stale timestamps, or sensitive inventory fields.
 - Version `0.2.4` was built by Jenkins build `7` for AMD64 and ARM64 at manifest-list digest
   `sha256:0eb4de931a874155cfa81badb1575c289a96deb9118235499278c7043ee776a9`.
   Its Tracker reconciled all 27 enabled devices once but was not accepted for ongoing deployment

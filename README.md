@@ -208,15 +208,16 @@ stable `ihv-sage-h02a` client ID until the `0.2.5` rollout is accepted.
 
 Production verification established:
 
-- Jenkins build `6` published the reviewed `84f9a8b` source for AMD64 and ARM64 at manifest-list
-  digest `sha256:340cace84379d3f19c3ec875e1fc5051cdddbc7d1b9b1ff5d1237e479a198c01`.
-- H02A canary job `5788` ran for about 11 minutes without failure before suspension. Previous
-  production job `5787` is suspended, and job `5789` is running the `0.2.3` image.
-- The initial post-cutover query returned 112 fresh records across 12 devices. All records kept
-  `deviceName`, `devEui`, `deduplicationId`, and `fCnt` metadata.
-- Four disconnected Dragino probes produced false
-  `external_temperature_sensor_available` records, displayed by Sage as `0`, with no
-  `temp_ds18b20 == 327.6` records. Mapped field metadata remained present.
+- Jenkins build `8` published reviewed commit `78f7ab1` for AMD64 and ARM64 at manifest-list
+  digest `sha256:587d318403966ad82010378fbda6cae81c37094982a37e0bd2e51c0d05c6f498`.
+- H02A dry-run canary job `5791` ran for 10 minutes 50 seconds and processed 53 uplinks with zero
+  invalid sentinel measurements, runtime failures, or restarts before suspension. Its lingering
+  pod and an orphaned pod from removed canary `5785` were explicitly removed.
+- Previous production job `5789` was suspended, and production job `5792` is the sole active
+  forwarder on version `0.2.5` using the stable `ihv-sage-h02a` client ID.
+- The initial post-cutover Data API query returned 110 fresh `0.2.5` records from 17 uplinks
+  across 13 devices. Every record retained `deviceName`, `devEui`, `deduplicationId`, and `fCnt`;
+  four availability records were false and no filtered sentinel appeared.
 
 Verify the production path through both the Sage Data API and the H02A Latest Records page:
 
@@ -270,9 +271,19 @@ The 2026-09-03 preflight reproduced and repaired Sage Auth's rejection of unroun
 battery floats, then reconciled all 27 freshly enumerated enabled devices. The first `0.2.4`
 deployment exposed intermittent H02A external DNS resolution during Sage Auth requests, so
 `0.2.5` retries transient DNS, rate-limit, and server failures before failing a delivery.
-Completion still requires the long-running deployment to report zero restarts, keep current
-connection timestamps, match all exact DevEUIs, and leave production forwarder job `5789`
-publishing until its reviewed replacement is healthy.
+
+The accepted `0.2.5` deployment reconciled all 27 enabled devices at startup, subscribed to live
+uplinks at QoS 1, and continued refreshing connection timestamps with zero restarts. A fresh
+cross-system audit matched 27 ChirpStack devices to 27 H02A Sage connections with no missing or
+extra DevEUIs or sensitive key/session/address fields, while preserving exact current timestamps
+and normalized names. Tracker made no ChirpStack, gateway, or packet-forwarder configuration
+changes.
+
+The Tracker pod uses explicit public resolvers because H02A's cluster DNS intermittently returns
+temporary failures for the external Sage Auth hostname. Its MQTT and ChirpStack endpoints are
+already fixed IP addresses, so the workload does not depend on Kubernetes service discovery. A
+30-lookup H02A probe against the explicit resolver path completed with zero failures before the
+deployment manifest was changed.
 
 ## References
 

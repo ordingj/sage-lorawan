@@ -451,6 +451,8 @@ def test_tracker_deployment_is_h02a_scoped_and_secret_backed() -> None:
     assert deployment["metadata"]["name"] == "ihv-cenic-chirpstack-tracker"
     assert deployment["spec"]["strategy"] == {"type": "Recreate"}
     assert pod["nodeSelector"] == {"zone": "core"}
+    assert pod["dnsPolicy"] == "None"
+    assert pod["dnsConfig"]["nameservers"] == ["1.1.1.1", "8.8.8.8"]
     assert "ihv-cenic-chirpstack-devices:0.2.5" in container["image"]
     assert "--mode" in container["args"]
     assert "tracker" in container["args"]
