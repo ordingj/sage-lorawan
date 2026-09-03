@@ -1,6 +1,6 @@
 name: "ihv-cenic-chirpstack-devices"
-version: "0.2.1"
-description: "Forward IHV-CENIC ChirpStack uplinks and register LoRaWAN device inventory in Sage"
+version: "0.2.2"
+description: "Publish decoded IHV-CENIC vineyard LoRaWAN sensor observations through Sage"
 keywords: "LoRaWAN, ChirpStack, MQTT, vineyard"
 authors: "Joseph Ording, IHV-CENIC"
 collaborators: ""

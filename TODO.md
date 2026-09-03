@@ -14,7 +14,9 @@
   - Catalog-only version `0.2.1` was built from commit
     `2e2bdfe368b3e7a1dcc3a32a3c0fa8a181540935` with the same multi-architecture digest as
     `0.2.0`; the My App Science Overview now displays the completed rollout status.
-  - [x] Refresh and verify the My App Science Overview from the final release description.
+  - [/] Replace the deployment-history-heavy Science Overview with concise user documentation
+        and publish it as catalog version `0.2.2`.
+    <!-- working-on: publish concise Sage catalog Science Overview -->
 
 - [x] Add Sage unit metadata to known physical sensor measurements.
   - The forwarder now emits plural `meta.units` for known battery, atmospheric, soil, UV-A,

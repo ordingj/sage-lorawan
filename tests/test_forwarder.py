@@ -363,7 +363,7 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "app.main"]' in dockerfile
     assert "__pycache__/" in dockerignore
     assert manifest["name"] == "ihv-cenic-chirpstack-devices"
-    assert manifest["version"] == "0.2.1"
+    assert manifest["version"] == "0.2.2"
     assert manifest["source"]["architectures"] == ["linux/amd64", "linux/arm64"]
     assert job["nodes"] == {"H02A": True}
     plugin = job["plugins"][0]
@@ -381,10 +381,16 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert "--dry-run" not in plugin["pluginSpec"]["args"]
 
 
-def test_ecr_description_matches_readme_and_assets_are_present() -> None:
-    assert (REPO_ROOT / "ecr-meta/ecr-science-description.md").read_bytes() == (
-        REPO_ROOT / "README.md"
-    ).read_bytes()
+def test_ecr_description_is_user_focused_and_assets_are_present() -> None:
+    description = (REPO_ROOT / "ecr-meta/ecr-science-description.md").read_text()
+    assert description.startswith("# Sage LoRaWAN Forwarder for IHV-CENIC\n")
+    assert "## Scientific purpose" in description
+    assert "## Published data" in description
+    assert "## View the data" in description
+    assert "Optional Tracker" not in description
+    assert "Canary job" not in description
+    assert "production job" not in description
+    assert len(description.splitlines()) < 80
     assert (REPO_ROOT / "ecr-meta/ecr-icon.jpg").is_file()
     assert (REPO_ROOT / "ecr-meta/ecr-science-image.jpg").is_file()
     with Image.open(REPO_ROOT / "ecr-meta/ecr-icon.jpg") as icon:

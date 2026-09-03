@@ -38,6 +38,11 @@
 
 ### Deployment
 
+- Catalog version `0.2.2` replaces the deployment-oriented Science Overview with concise user
+  documentation focused on the app's scientific purpose, published measurements and metadata,
+  and how to view those fields in the Sage Query Browser. The catalog description is now kept
+  separate from the operator README so rollout history cannot leak into the user-facing page.
+  The runtime remains unchanged.
 - Catalog version `0.2.1` was built from commit
   `2e2bdfe368b3e7a1dcc3a32a3c0fa8a181540935` and republishes the completed rollout Science
   Overview without changing application source, dependencies, the Dockerfile, deployment
