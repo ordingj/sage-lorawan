@@ -11,12 +11,14 @@
     suspended. Production job `5782` was suspended and replaced by active `0.2.0` job `5787`.
   - The Data API and Query Browser show live atmospheric, battery, and `temp_soil`,
     `conduct_soil`, and `water_soil` units plus mapped field metadata.
-  - Catalog-only version `0.2.1` was built from commit
-    `2e2bdfe368b3e7a1dcc3a32a3c0fa8a181540935` with the same multi-architecture digest as
-    `0.2.0`; the My App Science Overview now displays the completed rollout status.
-  - [/] Replace the deployment-history-heavy Science Overview with concise user documentation
+  - Catalog-only version `0.2.2` was built from commit
+    `bdcf79a` with the same multi-architecture digest as `0.2.0`; the My App Science Overview
+    now contains only the scientific purpose, published data and metadata, and viewing guidance.
+  - [x] Replace the deployment-history-heavy Science Overview with concise user documentation
         and publish it as catalog version `0.2.2`.
-    <!-- working-on: publish concise Sage catalog Science Overview -->
+  - [ ] Stop the stale `0.1.1` task from removed job `5782`; Sage still reports current
+        `0.1.1` records even though the job inventory marks it removed. Direct H02A SSH currently
+        rejects the available public key, so node-owner or Sage operator access is required.
 
 - [x] Add Sage unit metadata to known physical sensor measurements.
   - The forwarder now emits plural `meta.units` for known battery, atmospheric, soil, UV-A,

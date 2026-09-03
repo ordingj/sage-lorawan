@@ -38,11 +38,12 @@
 
 ### Deployment
 
-- Catalog version `0.2.2` replaces the deployment-oriented Science Overview with concise user
-  documentation focused on the app's scientific purpose, published measurements and metadata,
-  and how to view those fields in the Sage Query Browser. The catalog description is now kept
-  separate from the operator README so rollout history cannot leak into the user-facing page.
-  The runtime remains unchanged.
+- Catalog version `0.2.2` was built by Jenkins build `5` from commit `bdcf79a` and replaces the
+  deployment-oriented Science Overview with concise user documentation focused on the app's
+  scientific purpose, published measurements and metadata, and how to view those fields in the
+  Sage Query Browser. The catalog description is now kept separate from the operator README so
+  rollout history cannot leak into the user-facing page. Its AMD64/ARM64 manifest-list digest is
+  unchanged from `0.2.0`: `sha256:9d8c240737143e4e504d7912b226cdadaea138ffe0a6ef4cb64a033b7c8b1dee`.
 - Catalog version `0.2.1` was built from commit
   `2e2bdfe368b3e7a1dcc3a32a3c0fa8a181540935` and republishes the completed rollout Science
   Overview without changing application source, dependencies, the Dockerfile, deployment
