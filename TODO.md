@@ -1,6 +1,10 @@
 # TODO
 
+<!-- working-on: Deploy version 0.2.0 to H02A and verify fresh measurements expose meta.units. -->
+
 ## Sage Forwarder Measurement Metadata
+
+- [/] Deploy version `0.2.0` to H02A and verify fresh measurements expose `meta.units`.
 
 - [x] Add Sage unit metadata to known physical sensor measurements.
   - The forwarder now emits plural `meta.units` for known battery, atmospheric, soil, UV-A,

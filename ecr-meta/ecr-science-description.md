@@ -179,9 +179,10 @@ serializes every metadata value and adds a regression boundary that rejects the 
 shape as PyWaggle. After canary job `5781` passed, production job `5782` was scheduled with the
 stable client ID `ihv-sage-h02a`.
 
-Both job templates remain pinned to deployed version `0.1.1`. The new unit metadata will not
-appear in live H02A records until version `0.2.0` passes review, is published, and the production
-forwarder is deliberately rolled to that image.
+Both job templates now target version `0.2.0`; production job `5782` remains on deployed version
+`0.1.1` until the new image passes publication and canary verification. The new unit metadata
+will not appear in live H02A records until the production forwarder is deliberately rolled to
+the reviewed image.
 
 Production verification established:
 
