@@ -228,8 +228,11 @@ class ChirpStackApiClient:
         hardware_model = normalize_hardware_model(profile.name)
         return DeviceInventory(
             dev_eui=device.dev_eui.lower(),
-            name=device.name or fallback_name,
-            battery_level=float(device_response.device_status.battery_level),
+            name=normalize_inventory_name(device.name or fallback_name),
+            battery_level=round(
+                float(device_response.device_status.battery_level),
+                2,
+            ),
             hardware=profile.name,
             hardware_model=hardware_model,
             hardware_description=profile.description,
@@ -289,8 +292,14 @@ class SageHttpTransport:
         except HTTPError as error:
             if error.code == 404 and method == "GET":
                 return None
+            detail = (
+                error.read().decode("utf-8", errors="replace")[:500]
+                if error.fp is not None
+                else "no response body"
+            )
             raise RuntimeError(
-                f"Sage inventory request {method} {path} failed with HTTP {error.code}"
+                f"Sage inventory request {method} {path} failed with HTTP {error.code}: "
+                f"{detail}"
             ) from error
         except URLError as error:
             raise RuntimeError(f"Sage inventory request {method} {path} failed") from error
@@ -591,6 +600,12 @@ def normalize_hardware_model(value: str) -> str:
     return normalized
 
 
+def normalize_inventory_name(value: str) -> str:
+    """Return the underscore-delimited device name accepted by Sage Auth."""
+
+    return re.sub(r"_+", "_", value.replace(" ", "_")).strip("_")
+
+
 def _protobuf_timestamp(value: Any) -> str | None:
     if not value.ListFields():
         return None
@@ -611,6 +626,7 @@ __all__ = [
     "TrackerSettings",
     "UplinkIdentity",
     "normalize_hardware_model",
+    "normalize_inventory_name",
     "normalize_rfc3339",
     "uplink_identity_from_payload",
 ]

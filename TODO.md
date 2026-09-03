@@ -2,6 +2,12 @@
 
 ## Sage Forwarder Measurement Metadata
 
+- [/] Publish and roll out version `0.2.4` with complete sensor-sentinel safeguards.
+  - [x] Cover invalid SDI-12 ports and battery voltage, Dragino soil-probe availability,
+        TEROS-22 errors, and Milesight EM500 CO2/pressure errors with focused tests.
+  - [ ] Publish the reviewed AMD64/ARM64 image, run a bounded H02A canary, and roll production
+        forward only after current records prove the invalid values remain absent.
+
 - [x] Suppress Dragino's `temp_ds18b20 == 327.6` unavailable sentinel and publish an
       external-temperature-sensor availability measurement instead.
   - ECR build `6` published commit `84f9a8b` for AMD64 and ARM64 at manifest-list digest
@@ -62,20 +68,22 @@
   - [x] Record the reviewed commit, ECR digest, job IDs, and forwarder regression evidence in
         `README.md`, `CHANGELOG.md`, and this TODO.
 
-## Optional Tracker Deployment (Deferred)
+## Tracker Deployment
 
-- [ ] Deploy Tracker only if Sage LoRaWAN inventory is later required; it is not necessary for
-      the working measurement-forwarding path.
-  - [ ] Ask a Sage administrator to retrieve or rotate H02A's server-side node-auth token, then
+- [/] Deploy Tracker for H02A LoRaWAN inventory; it remains separate from the working
+      measurement-forwarding path.
+  - [x] Retrieve H02A's server-side node-auth token, then
         install it as H02A Secret `django-token`, key `token`, without exposing the value in Git,
         shell arguments, logs, or command history.
-  - [ ] Apply `deploy/tracker-deployment.yaml` on H02A; verify rollout completion, zero restarts,
+  - [/] Apply `deploy/tracker-deployment.yaml` on H02A; verify rollout completion, zero restarts,
         successful startup inventory reconciliation, and continued QoS-1 live refreshes.
   - [ ] Compare H02A **LoRaWAN Devices** against a fresh enabled-device ChirpStack inventory by
         exact DevEUI, count, and current connection timestamp; the 2026-09-01 baseline is 27
         devices, but the live inventory at rollout time is authoritative.
   - [ ] Confirm Tracker remains inventory-only: no root/session keys or device addresses entered
         Sage, no second ChirpStack was installed, and gateway packet forwarding was not changed.
+  - Live preflight exposed Sage Auth's two-decimal battery contract, then reconciled the fresh
+    27-device ChirpStack inventory after rounding battery values and normalizing device names.
 
 ## Completed Preparation
 

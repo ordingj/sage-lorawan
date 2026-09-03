@@ -37,17 +37,16 @@ Known physical measurements include `meta.units`, including `V`, `%`, `ppm`, `%R
 `kPa`, `°C`, `µS/cm`, and `W/m²`. Status fields, counters, identifiers, and unknown measurement
 types remain unitless.
 
-For Dragino SE01-LS and SE0X-LS soil devices, `temp_ds18b20 == 327.6` is a device sentinel that
-means the optional external temperature probe is disconnected, not a physical observation. The
-forwarder omits that false temperature and publishes
-`external_temperature_sensor_available = false` instead. A valid external temperature is
-published normally alongside `external_temperature_sensor_available = true`.
+Documented device error values are published as availability fields instead of physical
+observations. This includes disconnected Dragino soil and external-temperature probes, TEROS-22
+measurement errors, and Milesight EM500 CO2 and pressure errors. The forwarder also discards
+unsupported SDI-12 application ports and the known false `7.2 V` battery value.
 
 Delivery is at least once. Consumers can identify a replay using the measurement name together
 with `deduplicationId`, `devEui`, and `fCnt`.
 
 ## View the data
 
-Open the [H02A Query Browser](https://portal.sagecontinuum.org/query-browser?nodes=H02A&apps=registry.sagecontinuum.org%2Fordingj%2Fihv-cenic-chirpstack-devices%3A0.2.3.*&start=-5m&page=0)
+Open the [H02A Query Browser](https://portal.sagecontinuum.org/query-browser?nodes=H02A&apps=registry.sagecontinuum.org%2Fordingj%2Fihv-cenic-chirpstack-devices%3A0.2.4.*&start=-5m&page=0)
 to view current measurements. Units appear beside supported values. Enable **meta** above the
 results table to display the device label, block, slope, coordinates, and other provenance.

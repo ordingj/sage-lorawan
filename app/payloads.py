@@ -60,9 +60,17 @@ _HISTORY_FIELD_PATTERN = re.compile(r"^history_\d+_(?P<field>.+)$")
 _SENSECAP_VALUE_PATTERN = re.compile(r"^messages_(?P<index>\d+)_measurementvalue$")
 _SENSECAP_BATTERY_PATTERN = re.compile(r"^messages_\d+_battery$")
 _DRAGINO_SOIL_DEVICE_PATTERN = re.compile(r"^SE0[1X]-LS-\d+$")
+_SDI12_DEVICE_PATTERN = re.compile(r"^SDI-12-LS-US915-\d+$")
+_TEROS22_DEVICE_NAMES = {
+    "SDI-12-LS-US915-1",
+    "SDI-12-LS-US915-2",
+    "SDI-12-LS-US915-4",
+}
+_TEROS22_ERROR_CODES = (-9999.0, -9992.0)
 _DS18B20_TEMPERATURE = "temp_ds18b20"
 _DS18B20_UNAVAILABLE_VALUE = 327.6
 _EXTERNAL_TEMPERATURE_SENSOR_AVAILABLE = "external_temperature_sensor_available"
+_SOIL_MEASUREMENT_PATTERN = re.compile(r"^(?:water|temp|conduct)_soil\d*$")
 _DEVICE_METADATA_PATH = Path(__file__).with_name("device_metadata.json")
 _DEVICE_METADATA_FIELDS = ("device_label", "block", "slope", "latitude", "longitude")
 
@@ -120,7 +128,11 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
         normalized_values[name] = value
     if not normalized_fields:
         raise PayloadError("ChirpStack uplink object contains no scalar measurements")
-    normalized_fields = _sanitize_dragino_ds18b20(normalized_fields, device_info)
+    normalized_fields = _sanitize_sensor_measurements(
+        normalized_fields,
+        device_info,
+        decoded_payload,
+    )
     normalized_values = dict(normalized_fields)
 
     records: list[SageMeasurement] = []
@@ -131,6 +143,38 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
             metadata = {**base_metadata, "units": units}
         records.append(SageMeasurement(name, value, timestamp_ns, metadata))
     return tuple(records)
+
+
+def _sanitize_sensor_measurements(
+    fields: list[tuple[str, bool | int | float | str]],
+    device_info: Mapping[str, Any],
+    payload: Mapping[str, Any],
+) -> list[tuple[str, bool | int | float | str]]:
+    """Apply the external-sink sentinel policy before Sage publication."""
+
+    device_name = device_info.get("deviceName")
+    if not isinstance(device_name, str):
+        return fields
+    f_port = _finite_number(payload.get("fPort"))
+    if _SDI12_DEVICE_PATTERN.fullmatch(device_name) is not None and f_port not in {
+        2.0,
+        5.0,
+        100.0,
+    }:
+        return []
+
+    sanitized = list(fields)
+    if _SDI12_DEVICE_PATTERN.fullmatch(device_name) is not None:
+        sanitized = [
+            (name, value)
+            for name, value in sanitized
+            if not (name == "batv" and _equals(value, 7.2))
+        ]
+    sanitized = _sanitize_dragino_ds18b20(sanitized, device_info)
+    sanitized = _sanitize_dragino_soil_probe(sanitized, device_name)
+    sanitized = _sanitize_teros22(sanitized, device_name)
+    sanitized = _sanitize_em500_co2(sanitized, device_name)
+    return _sanitize_em500_pressure(sanitized, device_name)
 
 
 def _sanitize_dragino_ds18b20(
@@ -168,6 +212,118 @@ def _sanitize_dragino_ds18b20(
     ]
     sanitized.append((_EXTERNAL_TEMPERATURE_SENSOR_AVAILABLE, not unavailable))
     return sanitized
+
+
+def _sanitize_dragino_soil_probe(
+    fields: list[tuple[str, bool | int | float | str]],
+    device_name: str,
+) -> list[tuple[str, bool | int | float | str]]:
+    if _DRAGINO_SOIL_DEVICE_PATTERN.fullmatch(device_name) is None:
+        return fields
+    values = dict(fields)
+    soil_names = {name for name, _value in fields if _SOIL_MEASUREMENT_PATTERN.fullmatch(name)}
+    unavailable = _equals(values.get("s_flag"), 0)
+    return _replace_availability(
+        fields,
+        name="soil_probe_available",
+        value=False if unavailable else bool(soil_names),
+        remove=soil_names if unavailable else set(),
+        include=unavailable or bool(soil_names),
+    )
+
+
+def _sanitize_teros22(
+    fields: list[tuple[str, bool | int | float | str]],
+    device_name: str,
+) -> list[tuple[str, bool | int | float | str]]:
+    if device_name not in _TEROS22_DEVICE_NAMES:
+        return fields
+    values = dict(fields)
+    names = {"matric_potential", "temp"}
+    has_error = any(
+        _equals(values.get(name), sentinel)
+        for name in names
+        for sentinel in _TEROS22_ERROR_CODES
+    )
+    has_measurement = any(_finite_number(values.get(name)) is not None for name in names)
+    return _replace_availability(
+        fields,
+        name="teros22_measurement_available",
+        value=not has_error,
+        remove=names if has_error else set(),
+        include=has_error or has_measurement,
+    )
+
+
+def _sanitize_em500_co2(
+    fields: list[tuple[str, bool | int | float | str]],
+    device_name: str,
+) -> list[tuple[str, bool | int | float | str]]:
+    if not device_name.startswith("EM500-CO2"):
+        return fields
+    values = dict(fields)
+    measurements = {"co2", "pressure", "temperature", "humidity"}
+    has_error = any(
+        _equals(values.get(name), sentinel)
+        for name, sentinel in (
+            ("co2", 65535),
+            ("pressure", 6553.5),
+            ("humidity", 127.5),
+        )
+    )
+    return _replace_availability(
+        fields,
+        name="em500_co2_measurement_available",
+        value=not has_error,
+        remove=measurements if has_error else set(),
+        include=has_error or any(name in values for name in measurements),
+    )
+
+
+def _sanitize_em500_pressure(
+    fields: list[tuple[str, bool | int | float | str]],
+    device_name: str,
+) -> list[tuple[str, bool | int | float | str]]:
+    if not device_name.startswith("EM500-PP"):
+        return fields
+    values = dict(fields)
+    pressure = values.get("pressure")
+    has_error = _equals(pressure, 65535) or _equals(pressure, 65533)
+    return _replace_availability(
+        fields,
+        name="em500_pressure_measurement_available",
+        value=not has_error,
+        remove={"pressure"} if has_error else set(),
+        include=has_error or _finite_number(pressure) is not None,
+    )
+
+
+def _replace_availability(
+    fields: list[tuple[str, bool | int | float | str]],
+    *,
+    name: str,
+    value: bool,
+    remove: set[str],
+    include: bool,
+) -> list[tuple[str, bool | int | float | str]]:
+    sanitized = [
+        (field_name, field_value)
+        for field_name, field_value in fields
+        if field_name != name and field_name not in remove
+    ]
+    if include:
+        sanitized.append((name, value))
+    return sanitized
+
+
+def _equals(value: object, expected: float) -> bool:
+    number = _finite_number(value)
+    return number is not None and math.isclose(
+        number,
+        expected,
+        rel_tol=0.0,
+        abs_tol=0.000001,
+    )
 
 
 def _finite_number(value: object) -> float | None:

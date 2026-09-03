@@ -141,6 +141,7 @@ def test_payload_replaces_dragino_ds18b20_sentinel_with_unavailable_flag(
     assert {name: record.value for name, record in records_by_name.items()} == {
         "temp_soil": 24.7,
         "external_temperature_sensor_available": False,
+        "soil_probe_available": True,
     }
     availability = records_by_name["external_temperature_sensor_available"]
     assert availability.timestamp_ns == 1_787_205_662_123_456_789
@@ -175,6 +176,63 @@ def test_payload_leaves_ds18b20_value_from_unrelated_device_untouched() -> None:
     assert [(record.name, record.value) for record in records] == [("temp_ds18b20", 327.6)]
 
 
+def test_payload_withholds_invalid_sdi_port_and_battery_measurements() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["deviceName"] = "SDI-12-LS-US915-4"
+    payload["fPort"] = 6
+    payload["object"] = {"BatV": 27.286, "data_sum": "corrupt"}
+
+    assert measurements_from_payload(json.dumps(payload)) == ()
+
+    payload["fPort"] = 2
+    payload["object"] = {"BatV": 7.2, "data_sum": "valid"}
+    assert {
+        record.name: record.value for record in measurements_from_payload(json.dumps(payload))
+    } == {"data_sum": "valid"}
+
+
+def test_payload_matches_remaining_documented_sensor_sentinel_policy() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["deviceName"] = "SE0X-LS-1"
+    payload["object"] = {
+        "temp_DS18B20": 327.6,
+        "s_flag": 0,
+        "temp_SOIL1": 23.1,
+        "water_SOIL1": 15.4,
+        "conduct_SOIL1": 54,
+    }
+    assert {
+        record.name: record.value for record in measurements_from_payload(json.dumps(payload))
+    } == {
+        "s_flag": 0,
+        "external_temperature_sensor_available": False,
+        "soil_probe_available": False,
+    }
+
+    payload["deviceInfo"]["deviceName"] = "SDI-12-LS-US915-2"
+    payload["object"] = {"matric_potential": -9999, "temp": -9992}
+    assert {
+        record.name: record.value for record in measurements_from_payload(json.dumps(payload))
+    } == {"teros22_measurement_available": False}
+
+    payload["deviceInfo"]["deviceName"] = "EM500-CO2-915M-1"
+    payload["object"] = {
+        "co2": 65535,
+        "pressure": 6553.5,
+        "temperature": -0.1,
+        "humidity": 127.5,
+    }
+    assert {
+        record.name: record.value for record in measurements_from_payload(json.dumps(payload))
+    } == {"em500_co2_measurement_available": False}
+
+    payload["deviceInfo"]["deviceName"] = "EM500-PP-4842"
+    payload["object"] = {"pressure": 65533}
+    assert {
+        record.name: record.value for record in measurements_from_payload(json.dumps(payload))
+    } == {"em500_pressure_measurement_available": False}
+
+
 def test_payload_uses_device_specific_pressure_units_for_current_and_history() -> None:
     payload = _payload()
     payload["deviceInfo"]["applicationName"] = "EM500-PP-4842"
@@ -194,6 +252,7 @@ def test_payload_uses_device_specific_pressure_units_for_current_and_history() -
         "pressure": "kPa",
         "history_0_timestamp": None,
         "history_0_pressure": "kPa",
+        "em500_pressure_measurement_available": None,
     }
 
 
@@ -411,17 +470,17 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "app.main"]' in dockerfile
     assert "__pycache__/" in dockerignore
     assert manifest["name"] == "ihv-cenic-chirpstack-devices"
-    assert manifest["version"] == "0.2.3"
+    assert manifest["version"] == "0.2.4"
     assert manifest["source"]["architectures"] == ["linux/amd64", "linux/arm64"]
     assert job["nodes"] == {"H02A": True}
     plugin = job["plugins"][0]
     assert plugin["name"] == "ihv-cenic-chirpstack-devices"
-    assert "ihv-cenic-chirpstack-devices:0.2.3" in plugin["pluginSpec"]["image"]
+    assert "ihv-cenic-chirpstack-devices:0.2.4" in plugin["pluginSpec"]["image"]
     assert "192.168.1.200" in plugin["pluginSpec"]["args"]
     assert "ihv-sage-h02a" in plugin["pluginSpec"]["args"]
     canary_args = canary_job["plugins"][0]["pluginSpec"]["args"]
     assert (
-        "ihv-cenic-chirpstack-devices:0.2.3" in canary_job["plugins"][0]["pluginSpec"]["image"]
+        "ihv-cenic-chirpstack-devices:0.2.4" in canary_job["plugins"][0]["pluginSpec"]["image"]
     )
     assert canary_job["nodes"] == {"H02A": True}
     assert "ihv-sage-h02a-canary" in canary_args

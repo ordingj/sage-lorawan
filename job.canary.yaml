@@ -2,7 +2,7 @@ name: ihv-cenic-chirpstack-devices-h02a-canary
 plugins:
   - name: ihv-cenic-chirpstack-devices
     pluginSpec:
-      image: registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.3
+      image: registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.4
       args:
         - --mqtt-host
         - 192.168.1.200

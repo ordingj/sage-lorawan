@@ -33,6 +33,13 @@
 
 ### Fixed
 
+- Version `0.2.4` applies the full documented sensor-sentinel policy before Sage publication:
+  unsupported SDI-12 ports and `BatV == 7.2`, disconnected Dragino soil probes, TEROS-22 error
+  codes, and Milesight EM500 CO2 and pressure sentinels no longer become physical measurements.
+  Availability measurements preserve the device state where applicable.
+- Tracker now rounds ChirpStack's binary-float battery percentage to Sage Auth's two-decimal
+  contract and normalizes spaces in device names. Live preflight reconciled all 27 enabled
+  tenant devices after an unrounded value reproduced the API's five-total-digit rejection.
 - Version `0.2.3` suppresses the Dragino SE01-LS/SE0X-LS `temp_ds18b20 == 327.6`
   disconnected-probe sentinel and publishes the unitless boolean
   `external_temperature_sensor_available` measurement instead. Valid external-probe

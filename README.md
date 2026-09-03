@@ -1,10 +1,10 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** version `0.2.3` is public in the Sage Edge Code Repository (ECR) and running on
-> H02A. It publishes physical-measurement units and field metadata while replacing Dragino's
-> disconnected external-temperature-probe sentinel with an availability measurement.
+> **Status:** version `0.2.4` is prepared for publication with the complete documented
+> sensor-sentinel policy and Tracker API contract repairs. Production forwarder version `0.2.3`
+> remains active on H02A until the new image passes its bounded canary.
 
-Production image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.3`.
+Prepared image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.4`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic. Its default mode republishes decoded measurements through PyWaggle
@@ -135,12 +135,12 @@ Malformed JSON, missing identity/timestamp/object fields, non-finite values, uns
 types, and normalized-name collisions are rejected as permanent payload errors. They are logged
 and acknowledged so one poison message cannot block the persistent session.
 
-## Optional LoRaWAN device inventory (version 0.2.0 Tracker mode; deferred)
+## LoRaWAN device inventory (Tracker mode)
 
-Tracker is not necessary for the working MQTT-to-PyWaggle measurement path. It only adds
-LoRaWAN device and connection inventory to the Sage portal. The current rollout therefore keeps
-the simpler forwarder-only topology and leaves Tracker undeployed unless that separate inventory
-benefit is requested later.
+Tracker is not necessary for the working MQTT-to-PyWaggle measurement path. It adds LoRaWAN
+device and connection inventory to the Sage portal through a separate H02A deployment. Version
+`0.2.4` includes live-discovered normalization for Sage Auth's device-name and battery-decimal
+contracts.
 
 Tracker mode connects directly to the existing IHV-CENIC MQTT broker and ChirpStack v4 gRPC
 API on the Mac Studio. At startup it enumerates every enabled device in the configured tenant;
@@ -201,8 +201,9 @@ current publishing workflow. The `homepage` in `sage.yaml` points to that exact 
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
 `job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template. Both
-target version `0.2.3`. Canary job `5788` is suspended after its clean bounded run. Production
-job `5789` is the sole active forwarder and uses the stable `ihv-sage-h02a` client ID.
+target prepared version `0.2.4`. Canary job `5788` is suspended after its earlier clean bounded
+run. Production job `5789` remains the sole active forwarder on version `0.2.3` and uses the
+stable `ihv-sage-h02a` client ID until the `0.2.4` rollout is accepted.
 
 Production verification established:
 
@@ -228,7 +229,7 @@ The result must contain at least one decoded measurement with the source ChirpSt
 and matching `deviceName`, `devEui`, and `fCnt`. A running job or broker connection alone is not
 delivery proof.
 
-## Optional Tracker deployment (deferred)
+## Tracker deployment
 
 [`deploy/tracker-deployment.yaml`](https://gitlab.nrp-nautilus.io/ihv-cenic1/sage-lorawan/-/blob/main/deploy/tracker-deployment.yaml)
 is a direct H02A Kubernetes deployment because Tracker is a node inventory service, not a
@@ -238,8 +239,7 @@ does not mount or rewrite the generated WES node-manifest ConfigMap; Sage Auth r
 registry source of truth and WES will incorporate that inventory when it next generates the
 node manifest.
 
-Do not apply the deployment as part of the forwarder rollout. If the separate portal inventory
-is requested later, Tracker needs two credentials, of which the ChirpStack credential is ready:
+Tracker needs two credentials, both now installed on H02A:
 
 - `ihv-cenic-chirpstack-api`, key `api-key`: the dedicated
   `ihv-cenic-sage-h02a-tracker` ChirpStack v4 API key. It is non-admin, read-only, scoped only to
@@ -252,12 +252,10 @@ is requested later, Tracker needs two credentials, of which the ChirpStack crede
 The node-auth requirement is not interchangeable with a normal Sage user token. Sage Auth's
 LoRaWAN-device endpoint uses `NodeAuthMixin`, and its LoRaWAN-connection endpoint uses the
 node-owned variant; the official Tracker consequently sends `Authorization: node_auth <token>`.
-H02A currently has no node-auth Secret, and the signed-in `ordingj` account cannot administer
-node tokens. A Sage administrator must therefore generate or provide H02A's token. Keep both
-credential values out of Git, shell arguments, and command history.
+H02A's node-auth token is installed as `django-token` from the ignored mode-`0600` IHV `.env`.
+Keep both credential values out of Git, shell arguments, command history, and logs.
 
-After review, publication, and token delivery, deploy and verify from the authorized H02A SSH
-path:
+After review and publication, deploy and verify from the authorized H02A SSH path:
 
 ```bash
 ssh waggle-dev-node-H02A 'sudo kubectl apply -f -' < deploy/tracker-deployment.yaml
@@ -267,10 +265,10 @@ ssh waggle-dev-node-H02A \
   'sudo kubectl logs deployment/ihv-cenic-chirpstack-tracker --tail=100'
 ```
 
-Completion requires the H02A **LoRaWAN Devices** count and EUIs to match a fresh ChirpStack
-enabled-device inventory (27 at the 2026-09-01 review snapshot), current `last_seen_at` values, a
-healthy Tracker deployment with zero restarts, and production forwarding job `5789` continuing
-to publish measurements.
+The 2026-09-03 preflight reproduced and repaired Sage Auth's rejection of unrounded ChirpStack
+battery floats, then reconciled all 27 freshly enumerated enabled devices. Completion still
+requires the long-running H02A deployment to report zero restarts, keep current connection
+timestamps, match all exact DevEUIs, and leave production forwarder job `5789` publishing.
 
 ## References
 

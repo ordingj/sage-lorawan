@@ -23,6 +23,7 @@ from app.tracker import (
     SageRegistry,
     TrackerSettings,
     normalize_hardware_model,
+    normalize_inventory_name,
     uplink_identity_from_payload,
 )
 
@@ -66,6 +67,7 @@ def test_uplink_identity_is_canonical_and_django_timestamp_is_bounded() -> None:
     assert identity.device_profile_id == "c5618790-7705-475f-a5ea-5e87816e90ee"
     assert identity.last_seen_at == "2026-08-20T06:01:02.123456Z"
     assert normalize_hardware_model("SDI-12 (US915)") == "SDI-12"
+    assert normalize_inventory_name("Seismic  Sensor") == "Seismic_Sensor"
 
 
 class _GrpcOperation:
@@ -155,6 +157,53 @@ def test_chirpstack_client_uses_v4_api_key_and_reads_no_device_keys(monkeypatch:
     assert startup_inventory == (_inventory(),)
     for operation in (device_stub.Get, profile_stub.Get):
         assert operation.calls[0][1] == (("authorization", "Bearer secret-api-key"),)
+
+
+def test_chirpstack_client_normalizes_sage_decimal_and_name_contracts(
+    monkeypatch: Any,
+) -> None:
+    device_response = device_pb2.GetDeviceResponse()
+    device_response.device.dev_eui = "ac1f09fffe187239"
+    device_response.device.name = "Seismic Sensor"
+    device_response.device.device_profile_id = "profile-id"
+    device_response.device_status.battery_level = 92.91
+    applications_response = application_pb2.ListApplicationsResponse(total_count=1)
+    applications_response.result.add(id="application-id", name="Seismic")
+    devices_response = device_pb2.ListDevicesResponse(total_count=1)
+    devices_response.result.add(dev_eui="ac1f09fffe187239", name="Seismic Sensor")
+    profile_response = device_profile_pb2.GetDeviceProfileResponse()
+    profile_response.device_profile.id = "profile-id"
+    profile_response.device_profile.name = "Wisblock Starter Kit RAK4631"
+    application_stub = _ApplicationStub(applications_response)
+    device_stub = _DeviceStub(device_response, devices_response)
+    profile_stub = _ProfileStub(profile_response)
+    monkeypatch.setattr(
+        application_pb2_grpc,
+        "ApplicationServiceStub",
+        lambda _channel: application_stub,
+    )
+    monkeypatch.setattr(device_pb2_grpc, "DeviceServiceStub", lambda _channel: device_stub)
+    monkeypatch.setattr(
+        device_profile_pb2_grpc,
+        "DeviceProfileServiceStub",
+        lambda _channel: profile_stub,
+    )
+    settings = TrackerSettings(
+        mqtt_host="192.168.1.200",
+        chirpstack_api_url="http://192.168.1.200:8080",
+        chirpstack_api_key="secret-api-key",
+        chirpstack_tenant_id="tenant-id",
+        sage_node_token="secret-node-token",
+        node_vsn="H02A",
+    )
+
+    inventory = ChirpStackApiClient(
+        settings,
+        channel_factory=lambda _endpoint: object(),
+    ).all_devices()[0]
+
+    assert inventory.name == "Seismic_Sensor"
+    assert inventory.battery_level == 92.91
 
 
 class _RegistryTransport:
@@ -350,7 +399,7 @@ def test_tracker_deployment_is_h02a_scoped_and_secret_backed() -> None:
     assert deployment["metadata"]["name"] == "ihv-cenic-chirpstack-tracker"
     assert deployment["spec"]["strategy"] == {"type": "Recreate"}
     assert pod["nodeSelector"] == {"zone": "core"}
-    assert "ihv-cenic-chirpstack-devices:0.2.0" in container["image"]
+    assert "ihv-cenic-chirpstack-devices:0.2.4" in container["image"]
     assert "--mode" in container["args"]
     assert "tracker" in container["args"]
     assert "192.168.1.200" in container["args"]

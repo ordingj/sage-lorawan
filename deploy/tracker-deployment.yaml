@@ -25,7 +25,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: tracker
-          image: registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.0
+          image: registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.4
           imagePullPolicy: IfNotPresent
           args:
             - --mode
