@@ -38,9 +38,11 @@
 
 ### Deployment
 
-- Catalog version `0.2.1` republishes the completed rollout Science Overview without changing
-  application source, dependencies, the Dockerfile, deployment manifests, or production job
-  `5787`; its runtime is identical to deployed version `0.2.0`.
+- Catalog version `0.2.1` was built from commit
+  `2e2bdfe368b3e7a1dcc3a32a3c0fa8a181540935` and republishes the completed rollout Science
+  Overview without changing application source, dependencies, the Dockerfile, deployment
+  manifests, or production job `5787`. Jenkins build `4` produced the same multi-architecture
+  digest as deployed version `0.2.0`.
 - Version `0.2.0` was built and published from commit
   `60938a1efafc17143b5a3557e849906fca00215a` for AMD64 and ARM64. Its manifest-list digest is
   `sha256:9d8c240737143e4e504d7912b226cdadaea138ffe0a6ef4cb64a033b7c8b1dee`.
