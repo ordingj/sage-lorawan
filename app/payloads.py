@@ -59,6 +59,10 @@ _SENSECAP_MEASUREMENT_UNITS = {
 _HISTORY_FIELD_PATTERN = re.compile(r"^history_\d+_(?P<field>.+)$")
 _SENSECAP_VALUE_PATTERN = re.compile(r"^messages_(?P<index>\d+)_measurementvalue$")
 _SENSECAP_BATTERY_PATTERN = re.compile(r"^messages_\d+_battery$")
+_DRAGINO_SOIL_DEVICE_PATTERN = re.compile(r"^SE0[1X]-LS-\d+$")
+_DS18B20_TEMPERATURE = "temp_ds18b20"
+_DS18B20_UNAVAILABLE_VALUE = 327.6
+_EXTERNAL_TEMPERATURE_SENSOR_AVAILABLE = "external_temperature_sensor_available"
 _DEVICE_METADATA_PATH = Path(__file__).with_name("device_metadata.json")
 _DEVICE_METADATA_FIELDS = ("device_label", "block", "slope", "latitude", "longitude")
 
@@ -116,6 +120,8 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
         normalized_values[name] = value
     if not normalized_fields:
         raise PayloadError("ChirpStack uplink object contains no scalar measurements")
+    normalized_fields = _sanitize_dragino_ds18b20(normalized_fields, device_info)
+    normalized_values = dict(normalized_fields)
 
     records: list[SageMeasurement] = []
     for name, value in normalized_fields:
@@ -125,6 +131,55 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
             metadata = {**base_metadata, "units": units}
         records.append(SageMeasurement(name, value, timestamp_ns, metadata))
     return tuple(records)
+
+
+def _sanitize_dragino_ds18b20(
+    fields: list[tuple[str, bool | int | float | str]],
+    device_info: Mapping[str, Any],
+) -> list[tuple[str, bool | int | float | str]]:
+    """Replace Dragino's disconnected-probe sentinel with an availability flag."""
+
+    device_name = device_info.get("deviceName")
+    if (
+        not isinstance(device_name, str)
+        or _DRAGINO_SOIL_DEVICE_PATTERN.fullmatch(device_name) is None
+    ):
+        return fields
+
+    temperature = next(
+        (value for name, value in fields if name == _DS18B20_TEMPERATURE),
+        None,
+    )
+    numeric_temperature = _finite_number(temperature)
+    if numeric_temperature is None:
+        return fields
+
+    unavailable = math.isclose(
+        numeric_temperature,
+        _DS18B20_UNAVAILABLE_VALUE,
+        rel_tol=0.0,
+        abs_tol=0.000001,
+    )
+    sanitized = [
+        (name, value)
+        for name, value in fields
+        if name != _EXTERNAL_TEMPERATURE_SENSOR_AVAILABLE
+        and not (unavailable and name == _DS18B20_TEMPERATURE)
+    ]
+    sanitized.append((_EXTERNAL_TEMPERATURE_SENSOR_AVAILABLE, not unavailable))
+    return sanitized
+
+
+def _finite_number(value: object) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if not isinstance(value, int | float | str):
+        return None
+    try:
+        number = float(value)
+    except (OverflowError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
 
 
 def normalize_measurement_name(value: str) -> str:

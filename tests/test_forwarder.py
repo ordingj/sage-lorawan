@@ -127,6 +127,54 @@ def test_payload_adds_units_to_known_physical_measurements_only() -> None:
     }
 
 
+@pytest.mark.parametrize("sentinel", (327.6, "327.6"))
+def test_payload_replaces_dragino_ds18b20_sentinel_with_unavailable_flag(
+    sentinel: float | str,
+) -> None:
+    payload = _payload()
+    payload["deviceInfo"]["deviceName"] = "SE01-LS-1"
+    payload["object"] = {"temp_DS18B20": sentinel, "temp_SOIL": 24.7}
+
+    records = measurements_from_payload(json.dumps(payload))
+    records_by_name = {record.name: record for record in records}
+
+    assert {name: record.value for name, record in records_by_name.items()} == {
+        "temp_soil": 24.7,
+        "external_temperature_sensor_available": False,
+    }
+    availability = records_by_name["external_temperature_sensor_available"]
+    assert availability.timestamp_ns == 1_787_205_662_123_456_789
+    assert availability.metadata["deviceName"] == "SE01-LS-1"
+    assert "units" not in availability.metadata
+
+
+def test_payload_keeps_valid_dragino_ds18b20_temperature_and_marks_it_available() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["deviceName"] = "SE0X-LS-1"
+    payload["object"] = {"temp_DS18B20": 20.2}
+
+    records = {
+        record.name: record for record in measurements_from_payload(json.dumps(payload))
+    }
+
+    assert {name: record.value for name, record in records.items()} == {
+        "temp_ds18b20": 20.2,
+        "external_temperature_sensor_available": True,
+    }
+    assert records["temp_ds18b20"].metadata["units"] == "°C"
+    assert "units" not in records["external_temperature_sensor_available"].metadata
+
+
+def test_payload_leaves_ds18b20_value_from_unrelated_device_untouched() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["deviceName"] = "Apogee SU-221 UV"
+    payload["object"] = {"temp_DS18B20": 327.6}
+
+    records = measurements_from_payload(json.dumps(payload))
+
+    assert [(record.name, record.value) for record in records] == [("temp_ds18b20", 327.6)]
+
+
 def test_payload_uses_device_specific_pressure_units_for_current_and_history() -> None:
     payload = _payload()
     payload["deviceInfo"]["applicationName"] = "EM500-PP-4842"
@@ -363,17 +411,17 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "app.main"]' in dockerfile
     assert "__pycache__/" in dockerignore
     assert manifest["name"] == "ihv-cenic-chirpstack-devices"
-    assert manifest["version"] == "0.2.2"
+    assert manifest["version"] == "0.2.3"
     assert manifest["source"]["architectures"] == ["linux/amd64", "linux/arm64"]
     assert job["nodes"] == {"H02A": True}
     plugin = job["plugins"][0]
     assert plugin["name"] == "ihv-cenic-chirpstack-devices"
-    assert "ihv-cenic-chirpstack-devices:0.2.0" in plugin["pluginSpec"]["image"]
+    assert "ihv-cenic-chirpstack-devices:0.2.3" in plugin["pluginSpec"]["image"]
     assert "192.168.1.200" in plugin["pluginSpec"]["args"]
     assert "ihv-sage-h02a" in plugin["pluginSpec"]["args"]
     canary_args = canary_job["plugins"][0]["pluginSpec"]["args"]
     assert (
-        "ihv-cenic-chirpstack-devices:0.2.0" in canary_job["plugins"][0]["pluginSpec"]["image"]
+        "ihv-cenic-chirpstack-devices:0.2.3" in canary_job["plugins"][0]["pluginSpec"]["image"]
     )
     assert canary_job["nodes"] == {"H02A": True}
     assert "ihv-sage-h02a-canary" in canary_args

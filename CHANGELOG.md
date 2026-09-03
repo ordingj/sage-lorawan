@@ -33,6 +33,10 @@
 
 ### Fixed
 
+- Version `0.2.3` suppresses the Dragino SE01-LS/SE0X-LS `temp_ds18b20 == 327.6`
+  disconnected-probe sentinel and publishes the unitless boolean
+  `external_temperature_sensor_available` measurement instead. Valid external-probe
+  temperatures remain available in `°C` and carry a matching `true` availability record.
 - Serialize every ChirpStack metadata value as text before publication, matching PyWaggle's
   required string-to-string metadata contract. The test publisher now enforces that boundary.
 

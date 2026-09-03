@@ -2,6 +2,10 @@
 
 ## Sage Forwarder Measurement Metadata
 
+<!-- working-on: suppress the DS18B20 unavailable sentinel in Sage -->
+- [/] Suppress Dragino's `temp_ds18b20 == 327.6` unavailable sentinel and publish an
+      external-temperature-sensor availability measurement instead.
+
 - [x] Deploy version `0.2.0` to H02A, verify fresh measurements expose units and canonical
       field metadata.
   - ECR build `0.2.0` used commit `60938a1efafc17143b5a3557e849906fca00215a` and published

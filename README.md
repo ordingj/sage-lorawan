@@ -2,17 +2,19 @@
 
 > **Status:** catalog version `0.2.2` is public in the Sage Edge Code Repository (ECR).
 > The running forwarder publishes physical-measurement units and canonical device label, block,
-> slope, and coordinate metadata from H02A.
+> slope, and coordinate metadata from H02A. Version `0.2.3` is the release candidate that filters
+> Dragino's disconnected external-temperature-probe sentinel.
 
 Production image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.0`.
 Catalog refresh: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.2`.
+Release candidate: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.3`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
-application-uplink topic. Its default mode republishes every decoded scalar through PyWaggle.
-The optional Tracker mode only registers those devices in Sage's LoRaWAN inventory and is not
-required for measurement forwarding, so it was not included in this rollout. Neither mode
-changes device codecs, ChirpStack integrations, or the existing ThingsBoard, InfluxDB, and
-PostgreSQL delivery paths.
+application-uplink topic. Its default mode republishes decoded measurements through PyWaggle
+after applying documented sensor-availability rules. The optional Tracker mode only registers
+those devices in Sage's LoRaWAN inventory and is not required for measurement forwarding, so it
+was not included in this rollout. Neither mode changes device codecs, ChirpStack integrations,
+or the existing ThingsBoard, InfluxDB, and PostgreSQL delivery paths.
 
 The stock Sage `lorawan-listener` is not a safe drop-in for this fleet. It expects decoded
 payloads shaped as `object.measurements[]`; IHV-CENIC's established codecs emit canonical named
@@ -130,6 +132,13 @@ SenseCAP S2103 indexed measurement values receive `°C`, `%RH`, or `ppm` by thei
 measurement ID. The same unit policy covers numbered soil probes and Milesight historical
 records. Unknown fields, identity values, status flags, counters, and raw payload text remain
 unitless rather than receiving an inferred label.
+
+Dragino SE01-LS and SE0X-LS devices report `temp_DS18B20 = 327.6` when the optional external
+temperature probe is disconnected. The forwarder does not publish that sentinel as a
+temperature. It publishes the unitless boolean
+`external_temperature_sensor_available = false` with the same source timestamp and device
+metadata instead. A finite non-sentinel DS18B20 value remains a `temp_ds18b20` measurement with
+`°C` units and is accompanied by `external_temperature_sensor_available = true`.
 
 Malformed JSON, missing identity/timestamp/object fields, non-finite values, unsupported value
 types, and normalized-name collisions are rejected as permanent payload errors. They are logged

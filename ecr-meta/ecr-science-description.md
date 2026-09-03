@@ -2,8 +2,9 @@
 
 This app publishes decoded sensor observations from IHV-CENIC's vineyard LoRaWAN network
 through Sage node H02A. It listens to the existing ChirpStack MQTT application-uplink stream
-and republishes decoded values through PyWaggle. It does not change device codecs, ChirpStack
-integrations, or the existing ThingsBoard, InfluxDB, and PostgreSQL delivery paths.
+and republishes decoded values through PyWaggle after applying documented sensor-availability
+rules. It does not change device codecs, ChirpStack integrations, or the existing ThingsBoard,
+InfluxDB, and PostgreSQL delivery paths.
 
 ## Scientific purpose
 
@@ -36,11 +37,17 @@ Known physical measurements include `meta.units`, including `V`, `%`, `ppm`, `%R
 `kPa`, `°C`, `µS/cm`, and `W/m²`. Status fields, counters, identifiers, and unknown measurement
 types remain unitless.
 
+For Dragino SE01-LS and SE0X-LS soil devices, `temp_ds18b20 == 327.6` is a device sentinel that
+means the optional external temperature probe is disconnected, not a physical observation. The
+forwarder omits that false temperature and publishes
+`external_temperature_sensor_available = false` instead. A valid external temperature is
+published normally alongside `external_temperature_sensor_available = true`.
+
 Delivery is at least once. Consumers can identify a replay using the measurement name together
 with `deduplicationId`, `devEui`, and `fCnt`.
 
 ## View the data
 
-Open the [H02A Query Browser](https://portal.sagecontinuum.org/query-browser?nodes=H02A&apps=registry.sagecontinuum.org%2Fordingj%2Fihv-cenic-chirpstack-devices%3A0.2.0.*&start=-5m&page=0)
+Open the [H02A Query Browser](https://portal.sagecontinuum.org/query-browser?nodes=H02A&apps=registry.sagecontinuum.org%2Fordingj%2Fihv-cenic-chirpstack-devices%3A0.2.3.*&start=-5m&page=0)
 to view current measurements. Units appear beside supported values. Enable **meta** above the
 results table to display the device label, block, slope, coordinates, and other provenance.
