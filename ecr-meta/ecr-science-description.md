@@ -1,11 +1,13 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** version `0.2.0` is built and public in the Sage Edge Code Repository (ECR).
-> Canary job `5786` passed and was suspended; production job `5787` is active on H02A.
+> **Status:** catalog version `0.2.1` is built and public in the Sage Edge Code Repository (ECR).
+> It is a metadata-only refresh of the runtime-identical `0.2.0` release. Canary job `5786`
+> passed and was suspended; production job `5787` remains active on `0.2.0` at H02A.
 > Fresh Sage records expose physical-measurement units and canonical device label, block, slope,
 > and coordinate metadata. The optional Tracker inventory mode remains deliberately undeployed.
 
-ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.0`.
+Production image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.0`.
+Catalog refresh: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.1`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic. Its default mode republishes every decoded scalar through PyWaggle.
@@ -56,6 +58,10 @@ dry-run job `5786` pulled the ARM64 image on H02A and completed the bounded cana
 final pod ran for 9 minutes 29 seconds without a restart after accidental duplicate job `5785`
 was suspended. Job `5786` was then suspended, production `0.1.1` job `5782` was suspended, and
 production job `5787` began publishing through `0.2.0`.
+
+Version `0.2.1` republishes this completed rollout record to the Sage app catalog. It changes
+only ECR metadata, documentation, and local packaging labels; the application source,
+dependencies, Dockerfile, production job, and deployed `0.2.0` runtime are unchanged.
 
 Recheck the address and port from H02A before deployment; they are observed runtime facts, not
 configuration discovery:
