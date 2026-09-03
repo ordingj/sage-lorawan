@@ -1,17 +1,17 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** version `0.1.1` is built and public in the Sage Edge Code Repository (ECR).
-> Canary job `5781` passed and was suspended; production job `5782` is active on H02A.
-> Version `0.2.0` adds physical-measurement units, canonical field-deployment metadata, and the
-> external-ChirpStack Tracker mode described below; it is prepared for owner review and has not
-> been published or deployed.
+> **Status:** version `0.2.0` is built and public in the Sage Edge Code Repository (ECR).
+> Canary job `5786` passed and was suspended; production job `5787` is active on H02A.
+> Fresh Sage records expose physical-measurement units and canonical device label, block, slope,
+> and coordinate metadata. The optional Tracker inventory mode remains deliberately undeployed.
 
-ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.1`.
+ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.0`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
-application-uplink topic. Its default mode republishes every decoded scalar through PyWaggle;
-its optional Tracker mode registers the same live devices in Sage's LoRaWAN inventory. Neither
-mode changes device codecs, ChirpStack integrations, or the existing ThingsBoard, InfluxDB, and
+application-uplink topic. Its default mode republishes every decoded scalar through PyWaggle.
+The optional Tracker mode only registers those devices in Sage's LoRaWAN inventory and is not
+required for measurement forwarding, so it was not included in this rollout. Neither mode
+changes device codecs, ChirpStack integrations, or the existing ThingsBoard, InfluxDB, and
 PostgreSQL delivery paths.
 
 The stock Sage `lorawan-listener` is not a safe drop-in for this fleet. It expects decoded
@@ -49,11 +49,13 @@ Read-only checks from H02A on 2026-09-01 established:
 - The Sage portal and Data API report current H02A system data, but the job inventory contained
   no existing H02A edge job at the time of inspection.
 
-ECR version `0.1.1` was built for both `linux/amd64` and `linux/arm64` from reviewed source
-commit `277f3af1039eac9fd271ee844674f165e79f1eb5`. On 2026-09-01, dry-run job `5781` pulled the
-ARM64 image on H02A, stayed healthy with zero restarts, and decoded live soil, SDI-12, CO2, and
-other IHV-CENIC uplinks. It was suspended after verification. Production job `5782` then
-subscribed at QoS 1 and began publishing through the same image without errors.
+ECR version `0.2.0` was built for both `linux/amd64` and `linux/arm64` from reviewed source
+commit `60938a1efafc17143b5a3557e849906fca00215a`. Its manifest-list digest is
+`sha256:9d8c240737143e4e504d7912b226cdadaea138ffe0a6ef4cb64a033b7c8b1dee`. On 2026-09-02,
+dry-run job `5786` pulled the ARM64 image on H02A and completed the bounded canary window; its
+final pod ran for 9 minutes 29 seconds without a restart after accidental duplicate job `5785`
+was suspended. Job `5786` was then suspended, production `0.1.1` job `5782` was suspended, and
+production job `5787` began publishing through `0.2.0`.
 
 Recheck the address and port from H02A before deployment; they are observed runtime facts, not
 configuration discovery:
@@ -129,7 +131,12 @@ Malformed JSON, missing identity/timestamp/object fields, non-finite values, uns
 types, and normalized-name collisions are rejected as permanent payload errors. They are logged
 and acknowledged so one poison message cannot block the persistent session.
 
-## LoRaWAN device inventory (version 0.2.0 Tracker mode)
+## Optional LoRaWAN device inventory (version 0.2.0 Tracker mode; deferred)
+
+Tracker is not necessary for the working MQTT-to-PyWaggle measurement path. It only adds
+LoRaWAN device and connection inventory to the Sage portal. The current rollout therefore keeps
+the simpler forwarder-only topology and leaves Tracker undeployed unless that separate inventory
+benefit is requested later.
 
 Tracker mode connects directly to the existing IHV-CENIC MQTT broker and ChirpStack v4 gRPC
 API on the Mac Studio. At startup it enumerates every enabled device in the configured tenant;
@@ -196,21 +203,22 @@ serializes every metadata value and adds a regression boundary that rejects the 
 shape as PyWaggle. After canary job `5781` passed, production job `5782` was scheduled with the
 stable client ID `ihv-sage-h02a`.
 
-Both job templates now target version `0.2.0`; production job `5782` remains on deployed version
-`0.1.1` until the new image passes publication and canary verification. The new unit metadata
-will not appear in live H02A records until the production forwarder is deliberately rolled to
-the reviewed image.
+Both job templates target version `0.2.0`. Production job `5782` was healthy on version `0.1.1`
+immediately before cutover and is now suspended. Production job `5787` is the sole active
+forwarder and uses the stable `ihv-sage-h02a` client ID with the reviewed `0.2.0` image.
 
 Production verification established:
 
-- The H02A pod remained running with zero restarts while its logs reported the QoS-1
-  subscription and successful measurement batches without publication errors.
-- An initial 10-minute Sage Data API query returned 394 decoded records across 23 LoRa devices.
-  A representative record preserved the ChirpStack timestamp and carried `deviceName`,
-  lowercase `devEui`, `fCnt`, radio metadata, H02A identity, task name, and the exact `0.1.1`
-  plugin image.
-- The H02A Latest Records page displayed current `batv`, `data_sum`, `co2`, `humidity`,
-  `pressure`, `temperature`, and other values with their LoRa device names.
+- The H02A task list showed the `0.2.0` production pod running without an end time or replacement,
+  while fresh Data API records proved successful publication.
+- The initial post-cutover Sage Data API proof returned 37 fresh `0.2.0` records across three
+  devices. Every metadata value was a string and every record retained `deviceName`, lowercase
+  `devEui`, `fCnt`, H02A identity, and the exact plugin image.
+- Live soil records exposed `°C`, `µS/cm`, and `%` for `temp_soil1` through `temp_soil4`,
+  `conduct_soil1` through `conduct_soil4`, and `water_soil1` through `water_soil4`. Atmospheric
+  and battery records exposed `ppm`, `%RH`, `hPa`, `°C`, and `V`.
+- The Sage Query Browser rendered those units beside each value and its expanded metadata showed
+  the mapped `device_label`, `block`, `slope`, `latitude`, and `longitude` fields where available.
 
 Verify the production path through both the Sage Data API and the H02A Latest Records page:
 
@@ -224,7 +232,7 @@ The result must contain at least one decoded measurement with the source ChirpSt
 and matching `deviceName`, `devEui`, and `fCnt`. A running job or broker connection alone is not
 delivery proof.
 
-## Review and deploy Tracker mode
+## Optional Tracker deployment (deferred)
 
 [`deploy/tracker-deployment.yaml`](https://gitlab.nrp-nautilus.io/ihv-cenic1/sage-lorawan/-/blob/main/deploy/tracker-deployment.yaml)
 is a direct H02A Kubernetes deployment because Tracker is a node inventory service, not a
@@ -234,8 +242,8 @@ does not mount or rewrite the generated WES node-manifest ConfigMap; Sage Auth r
 registry source of truth and WES will incorporate that inventory when it next generates the
 node manifest.
 
-Do not apply the deployment until version `0.2.0` has been reviewed and published. Tracker needs
-two credentials, of which the ChirpStack credential is now ready:
+Do not apply the deployment as part of the forwarder rollout. If the separate portal inventory
+is requested later, Tracker needs two credentials, of which the ChirpStack credential is ready:
 
 - `ihv-cenic-chirpstack-api`, key `api-key`: the dedicated
   `ihv-cenic-sage-h02a-tracker` ChirpStack v4 API key. It is non-admin, read-only, scoped only to
@@ -265,8 +273,8 @@ ssh waggle-dev-node-H02A \
 
 Completion requires the H02A **LoRaWAN Devices** count and EUIs to match a fresh ChirpStack
 enabled-device inventory (27 at the 2026-09-01 review snapshot), current `last_seen_at` values, a
-healthy Tracker deployment with zero restarts, and the unchanged production forwarding job
-`5782` continuing to publish measurements.
+healthy Tracker deployment with zero restarts, and production forwarding job `5787` continuing
+to publish measurements.
 
 ## References
 

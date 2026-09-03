@@ -10,7 +10,7 @@
 - Separate H02A canary/production job templates, ECR review metadata, focused tests, GitLab CI,
   and local container checks.
 - Public `ordingj/sage-lorawan` GitHub source mirror for the ECR publishing workflow.
-- Prepared version `0.2.0` with an inventory-only Tracker mode for the external IHV-CENIC
+- Version `0.2.0` includes an optional inventory-only Tracker mode for the external IHV-CENIC
   ChirpStack v4 API and MQTT broker.
 - Reconcile the complete enabled-device tenant inventory at Tracker startup, then refresh each
   device from its subsequent live MQTT uplinks.
@@ -38,9 +38,20 @@
 
 ### Deployment
 
-- Version `0.2.0` is prepared for owner review and has not been published or deployed. H02A can
-  reach the external MQTT and ChirpStack API endpoints, but the node does not yet contain Sage's
-  required `django-token`; the signed-in `ordingj` account cannot administer node tokens.
+- Version `0.2.0` was built and published from commit
+  `60938a1efafc17143b5a3557e849906fca00215a` for AMD64 and ARM64. Its manifest-list digest is
+  `sha256:9d8c240737143e4e504d7912b226cdadaea138ffe0a6ef4cb64a033b7c8b1dee`.
+- H02A canary job `5786` completed the bounded rollout window and was suspended. Its final pod
+  ran 9 minutes 29 seconds without a restart after accidental duplicate canary `5785` was
+  detected and suspended.
+- Production job `5782` was healthy on `0.1.1` immediately before cutover and was suspended.
+  Production job `5787` is the sole active forwarder on `0.2.0`.
+- Initial post-cutover proof returned 37 fresh Data API records across three devices. Live soil,
+  atmospheric, and battery observations carried expected units, and the Query Browser exposed
+  mapped device label, block, slope, latitude, and longitude metadata.
+- Tracker was deliberately left undeployed because it is not required for measurement
+  forwarding. H02A still lacks Sage's required `django-token`; the signed-in `ordingj` account
+  cannot administer node tokens.
 - Created the non-admin, read-only `ihv-cenic-sage-h02a-tracker` API key scoped to the IHV-CENIC
   ChirpStack tenant, verified its inventory access, installed it as H02A Secret
   `ihv-cenic-chirpstack-api`, and retained it only in the ignored mode-`0600` project `.env`.
@@ -63,6 +74,6 @@
   first uplink and was suspended to stop the restart loop.
 - ECR version `0.1.1` was built for AMD64 and ARM64 from reviewed commit `277f3af`. H02A dry-run
   job `5781` decoded live uplinks with zero restarts and was suspended after verification.
-- Production job `5782` is running version `0.1.1` on H02A. Its logs show successful QoS-1
+- Production job `5782` ran version `0.1.1` on H02A. Its logs showed successful QoS-1
   publication, the initial Data API query returned 394 records from 23 LoRa devices with source
-  identity metadata, and the H02A Latest Records page displays current device measurements.
+  identity metadata, and the H02A Latest Records page displayed current device measurements.
