@@ -1,5 +1,14 @@
 # TODO
 
+## Sage Forwarder Measurement Metadata
+
+- [x] Add Sage unit metadata to known physical sensor measurements.
+  - The forwarder now emits plural `meta.units` for known battery, atmospheric, soil, UV-A,
+    device-specific pressure, SenseCAP indexed, and Milesight historical measurements while
+    leaving unknown and operational fields unitless.
+  - Focused payload contracts and the complete `make all` gate pass for version `0.2.0`; the
+    current H02A production job remains on `0.1.1` until the reviewed release rollout below.
+
 ## Sage Rollout Finalization
 
 - [ ] Finalize the Sage H02A rollout for IHV-CENIC ChirpStack devices.
@@ -22,6 +31,9 @@
   - [ ] Confirm production forwarder job `5782` remains healthy on version `0.1.1`, continues
         publishing current Data API records, and still shows LoRa Device Name while the optional
         conventional Sensor column remains blank as documented.
+  - [ ] Roll the production forwarder to reviewed version `0.2.0`, then verify fresh
+        `temp_soil`, atmospheric, soil, UV-A, and device-specific pressure records expose the
+        expected plural `meta.units` values in both the Sage Data API and portal.
   - [ ] Record the reviewed commits, ECR digest, Tracker deployment proof, final device count,
         and forwarder regression evidence in `README.md`, `CHANGELOG.md`, and this TODO; then mark
         the rollout complete.

@@ -50,8 +50,9 @@ def _payload() -> dict[str, Any]:
 
 def test_payload_flattens_existing_object_and_preserves_source_identity() -> None:
     records = measurements_from_payload(json.dumps(_payload()).encode())
+    records_by_name = {record.name: record for record in records}
 
-    assert {record.name: record.value for record in records} == {
+    assert {name: record.value for name, record in records_by_name.items()} == {
         "batv": 3.42,
         "flags_0": True,
         "flags_1": "ok",
@@ -59,7 +60,7 @@ def test_payload_flattens_existing_object_and_preserves_source_identity() -> Non
         "location_longitude": -122.9,
     }
     assert {record.timestamp_ns for record in records} == {1_787_205_662_123_456_789}
-    metadata = records[0].metadata
+    metadata = records_by_name["batv"].metadata
     assert metadata["deviceName"] == "SDI-12-LS-US915-1"
     assert metadata["devEui"] == "a8404111f05c5ef9"
     assert metadata["fCnt"] == "9921"
@@ -68,8 +69,96 @@ def test_payload_flattens_existing_object_and_preserves_source_identity() -> Non
     assert metadata["snr"] == "9.0"
     assert metadata["adr"] == "true"
     assert metadata["confirmed"] == "false"
+    assert metadata["units"] == "V"
     assert all(isinstance(value, str) for value in metadata.values())
+    assert "units" not in records_by_name["flags_0"].metadata
+    assert "units" not in records_by_name["location_latitude"].metadata
     assert "data" not in metadata
+
+
+def test_payload_adds_units_to_known_physical_measurements_only() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["deviceProfileName"] = "EM500-CO2"
+    payload["object"] = {
+        "battery": 91,
+        "co2": 476,
+        "humidity": 58.5,
+        "pressure": 1012.4,
+        "temperature": 24.7,
+        "temp_DS18B20": 23.9,
+        "temp_SOIL4": 22.6,
+        "conduct_SOIL4": 148,
+        "water_SOIL4": 31.2,
+        "uv_a_irradiance_w_m2": 4.25,
+        "node_type": 1,
+    }
+
+    units = {
+        record.name: record.metadata.get("units")
+        for record in measurements_from_payload(json.dumps(payload))
+    }
+
+    assert units == {
+        "battery": "%",
+        "co2": "ppm",
+        "humidity": "%RH",
+        "pressure": "hPa",
+        "temperature": "°C",
+        "temp_ds18b20": "°C",
+        "temp_soil4": "°C",
+        "conduct_soil4": "µS/cm",
+        "water_soil4": "%",
+        "uv_a_irradiance_w_m2": "W/m²",
+        "node_type": None,
+    }
+
+
+def test_payload_uses_device_specific_pressure_units_for_current_and_history() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["applicationName"] = "EM500-PP-4842"
+    payload["deviceInfo"]["deviceProfileName"] = "EM500-PP"
+    payload["deviceInfo"]["deviceName"] = "EM500-PP-4842"
+    payload["object"] = {
+        "pressure": 216,
+        "history": [{"timestamp": 1_666_938_125, "pressure": 210}],
+    }
+
+    units = {
+        record.name: record.metadata.get("units")
+        for record in measurements_from_payload(json.dumps(payload))
+    }
+
+    assert units == {
+        "pressure": "kPa",
+        "history_0_timestamp": None,
+        "history_0_pressure": "kPa",
+    }
+
+
+def test_payload_resolves_sensecap_units_from_sibling_measurement_ids() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["deviceProfileName"] = "SenseCAP S2103"
+    payload["object"] = {
+        "messages": [
+            {"measurementId": 4097, "measurementValue": 22.5},
+            {"measurementId": 4098, "measurementValue": 61.2},
+            {"measurementId": 4100, "measurementValue": 488},
+            {"battery": 94},
+            {"measurementId": 9999, "measurementValue": 3},
+        ]
+    }
+
+    units = {
+        record.name: record.metadata.get("units")
+        for record in measurements_from_payload(json.dumps(payload))
+    }
+
+    assert units["messages_0_measurementvalue"] == "°C"
+    assert units["messages_1_measurementvalue"] == "%RH"
+    assert units["messages_2_measurementvalue"] == "ppm"
+    assert units["messages_3_battery"] == "%"
+    assert units["messages_4_measurementvalue"] is None
+    assert units["messages_0_measurementid"] is None
 
 
 def test_payload_preserves_nanoseconds_across_timezone_offsets() -> None:

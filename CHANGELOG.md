@@ -16,6 +16,9 @@
   device from its subsequent live MQTT uplinks.
 - Added an H02A-scoped Kubernetes Tracker deployment that mounts the ChirpStack API key and Sage
   node-auth token from separate read-only secrets.
+- Plural `meta.units` metadata for known physical measurements, including device-specific
+  pressure units, numbered soil probes, SenseCAP measurement IDs, and historical Milesight
+  values; unknown and operational fields remain unitless.
 
 ### Changed
 

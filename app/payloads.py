@@ -35,6 +35,28 @@ _UPLINK_METADATA_FIELDS = (
     "fPort",
     "confirmed",
 )
+_MEASUREMENT_UNITS = {
+    "battery": "%",
+    "batv": "V",
+    "co2": "ppm",
+    "humidity": "%RH",
+    "temp_ds18b20": "°C",
+    "temperature": "°C",
+    "uv_a_irradiance_w_m2": "W/m²",
+}
+_SOIL_MEASUREMENT_UNITS = {
+    "conduct_soil": "µS/cm",
+    "temp_soil": "°C",
+    "water_soil": "%",
+}
+_SENSECAP_MEASUREMENT_UNITS = {
+    4097: "°C",
+    4098: "%RH",
+    4100: "ppm",
+}
+_HISTORY_FIELD_PATTERN = re.compile(r"^history_\d+_(?P<field>.+)$")
+_SENSECAP_VALUE_PATTERN = re.compile(r"^messages_(?P<index>\d+)_measurementvalue$")
+_SENSECAP_BATTERY_PATTERN = re.compile(r"^messages_\d+_battery$")
 
 
 class PayloadError(ValueError):
@@ -76,18 +98,28 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
     decoded = decoded_payload.get("object")
     if not isinstance(decoded, Mapping):
         raise PayloadError("ChirpStack uplink object must be a decoded JSON object")
-    metadata = _measurement_metadata(decoded_payload, device_info)
+    base_metadata = _measurement_metadata(decoded_payload, device_info)
 
-    records: list[SageMeasurement] = []
+    normalized_fields: list[tuple[str, bool | int | float | str]] = []
+    normalized_values: dict[str, bool | int | float | str] = {}
     names: set[str] = set()
     for source_name, value in _flatten_scalars("", decoded):
         name = normalize_measurement_name(source_name)
         if name in names:
             raise PayloadError(f"decoded fields collide after Sage normalization: {name}")
         names.add(name)
-        records.append(SageMeasurement(name, value, timestamp_ns, metadata))
-    if not records:
+        normalized_fields.append((name, value))
+        normalized_values[name] = value
+    if not normalized_fields:
         raise PayloadError("ChirpStack uplink object contains no scalar measurements")
+
+    records: list[SageMeasurement] = []
+    for name, value in normalized_fields:
+        metadata = base_metadata
+        units = _measurement_units(name, normalized_values, device_info)
+        if units is not None:
+            metadata = {**base_metadata, "units": units}
+        records.append(SageMeasurement(name, value, timestamp_ns, metadata))
     return tuple(records)
 
 
@@ -148,6 +180,45 @@ def _measurement_metadata(
     if best_snr is not None:
         metadata["snr"] = _metadata_scalar(best_snr, "rxInfo.snr")
     return metadata
+
+
+def _measurement_units(
+    name: str,
+    values: Mapping[str, bool | int | float | str],
+    device_info: Mapping[str, Any],
+) -> str | None:
+    """Return the display unit for a known physical measurement."""
+
+    history_match = _HISTORY_FIELD_PATTERN.fullmatch(name)
+    field = history_match.group("field") if history_match is not None else name
+
+    units = _MEASUREMENT_UNITS.get(field)
+    if units is not None:
+        return units
+
+    soil_match = re.fullmatch(r"(?P<field>conduct_soil|temp_soil|water_soil)\d*", field)
+    if soil_match is not None:
+        return _SOIL_MEASUREMENT_UNITS[soil_match.group("field")]
+
+    if field == "pressure":
+        device_identity = " ".join(
+            str(device_info.get(key, ""))
+            for key in ("applicationName", "deviceProfileName", "deviceName")
+        ).lower()
+        if "em500-pp" in device_identity:
+            return "kPa"
+        if "em500-co2" in device_identity:
+            return "hPa"
+
+    sensecap_match = _SENSECAP_VALUE_PATTERN.fullmatch(name)
+    if sensecap_match is not None:
+        measurement_id = values.get(f"messages_{sensecap_match.group('index')}_measurementid")
+        if isinstance(measurement_id, int) and not isinstance(measurement_id, bool):
+            return _SENSECAP_MEASUREMENT_UNITS.get(measurement_id)
+
+    if _SENSECAP_BATTERY_PATTERN.fullmatch(name) is not None:
+        return "%"
+    return None
 
 
 def _flatten_scalars(

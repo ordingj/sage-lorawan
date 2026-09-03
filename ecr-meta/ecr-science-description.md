@@ -2,8 +2,8 @@
 
 > **Status:** version `0.1.1` is built and public in the Sage Edge Code Repository (ECR).
 > Canary job `5781` passed and was suspended; production job `5782` is active on H02A.
-> Version `0.2.0` adds the external-ChirpStack Tracker mode described below; it is prepared
-> for owner review and has not been published or deployed.
+> Version `0.2.0` adds physical-measurement unit metadata and the external-ChirpStack Tracker
+> mode described below; it is prepared for owner review and has not been published or deployed.
 
 ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.1`.
 
@@ -92,6 +92,22 @@ values are serialized as strings because that is the PyWaggle publication contra
 measurement values retain their bool, number, or string types. Device variables and raw payload
 bytes are never published.
 
+Known physical measurements also carry the plural `meta.units` field consumed by the Sage
+portal. The forwarder currently assigns:
+
+| Measurement family                                      | `meta.units` |
+| ------------------------------------------------------- | ------------ |
+| Battery level / `batv`                                  | `%` / `V`    |
+| CO2 / relative humidity / temperature                   | `ppm` / `%RH` / `°C` |
+| EM500-CO2 barometric pressure / EM500-PP pipe pressure  | `hPa` / `kPa` |
+| Soil conductivity / temperature / water content         | `µS/cm` / `°C` / `%` |
+| Apogee UV-A irradiance                                  | `W/m²`       |
+
+SenseCAP S2103 indexed measurement values receive `°C`, `%RH`, or `ppm` by their sibling
+measurement ID. The same unit policy covers numbered soil probes and Milesight historical
+records. Unknown fields, identity values, status flags, counters, and raw payload text remain
+unitless rather than receiving an inferred label.
+
 Malformed JSON, missing identity/timestamp/object fields, non-finite values, unsupported value
 types, and normalized-name collisions are rejected as permanent payload errors. They are logged
 and acknowledged so one poison message cannot block the persistent session.
@@ -162,6 +178,10 @@ but was suspended after PyWaggle rejected numeric and boolean metadata. Version 
 serializes every metadata value and adds a regression boundary that rejects the same invalid
 shape as PyWaggle. After canary job `5781` passed, production job `5782` was scheduled with the
 stable client ID `ihv-sage-h02a`.
+
+Both job templates remain pinned to deployed version `0.1.1`. The new unit metadata will not
+appear in live H02A records until version `0.2.0` passes review, is published, and the production
+forwarder is deliberately rolled to that image.
 
 Production verification established:
 
