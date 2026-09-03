@@ -42,6 +42,14 @@
 
 ### Deployment
 
+- Version `0.2.3` was built by Jenkins build `6` from commit `84f9a8b` for AMD64 and ARM64.
+  Its manifest-list digest is
+  `sha256:340cace84379d3f19c3ec875e1fc5051cdddbc7d1b9b1ff5d1237e479a198c01`.
+- H02A canary job `5788` ran uninterrupted for about 11 minutes and was suspended. Previous
+  production job `5787` was suspended, and production job `5789` is running version `0.2.3`.
+- Initial production proof returned 112 records across 12 devices, including four false
+  `external_temperature_sensor_available` records and no `temp_ds18b20 == 327.6` records. The
+  required device identity metadata remained complete.
 - Catalog version `0.2.2` was built by Jenkins build `5` from commit `bdcf79a` and replaces the
   deployment-oriented Science Overview with concise user documentation focused on the app's
   scientific purpose, published measurements and metadata, and how to view those fields in the

@@ -1,13 +1,10 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** catalog version `0.2.2` is public in the Sage Edge Code Repository (ECR).
-> The running forwarder publishes physical-measurement units and canonical device label, block,
-> slope, and coordinate metadata from H02A. Version `0.2.3` is the release candidate that filters
-> Dragino's disconnected external-temperature-probe sentinel.
+> **Status:** version `0.2.3` is public in the Sage Edge Code Repository (ECR) and running on
+> H02A. It publishes physical-measurement units and field metadata while replacing Dragino's
+> disconnected external-temperature-probe sentinel with an availability measurement.
 
-Production image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.0`.
-Catalog refresh: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.2`.
-Release candidate: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.3`.
+Production image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.3`.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic. Its default mode republishes decoded measurements through PyWaggle
@@ -51,17 +48,11 @@ Read-only checks from H02A on 2026-09-01 established:
 - The Sage portal and Data API report current H02A system data, but the job inventory contained
   no existing H02A edge job at the time of inspection.
 
-ECR version `0.2.0` was built for both `linux/amd64` and `linux/arm64` from reviewed source
-commit `60938a1efafc17143b5a3557e849906fca00215a`. Its manifest-list digest is
-`sha256:9d8c240737143e4e504d7912b226cdadaea138ffe0a6ef4cb64a033b7c8b1dee`. On 2026-09-02,
-dry-run job `5786` pulled the ARM64 image on H02A and completed the bounded canary window; its
-final pod ran for 9 minutes 29 seconds without a restart after accidental duplicate job `5785`
-was suspended. Job `5786` was then suspended, production `0.1.1` job `5782` was suspended, and
-production job `5787` began publishing through `0.2.0`.
-
-Version `0.2.2` publishes a concise, user-focused Science Overview to the Sage app catalog. It
-changes only ECR metadata, documentation, and local packaging labels; the application source,
-dependencies, Dockerfile, production job, and deployed `0.2.0` runtime are unchanged.
+ECR version `0.2.3` was built for both `linux/amd64` and `linux/arm64` from reviewed source
+commit `84f9a8b`. Its manifest-list digest is
+`sha256:340cace84379d3f19c3ec875e1fc5051cdddbc7d1b9b1ff5d1237e479a198c01`. H02A canary job
+`5788` completed an uninterrupted 11-minute dry-run before suspension, and production job
+`5789` now publishes through `0.2.3`.
 
 Recheck the address and port from H02A before deployment; they are observed runtime facts, not
 configuration discovery:
@@ -209,29 +200,21 @@ Sage's ECR source is the public
 current publishing workflow. The `homepage` in `sage.yaml` points to that exact source. Keep
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
-`job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template.
-Publication approval was granted on 2026-09-01. Initial production job `5780` connected to MQTT
-but was suspended after PyWaggle rejected numeric and boolean metadata. Version `0.1.1`
-serializes every metadata value and adds a regression boundary that rejects the same invalid
-shape as PyWaggle. After canary job `5781` passed, production job `5782` was scheduled with the
-stable client ID `ihv-sage-h02a`.
-
-Both job templates target version `0.2.0`. Production job `5782` was healthy on version `0.1.1`
-immediately before cutover and is now suspended. Production job `5787` is the sole active
-forwarder and uses the stable `ihv-sage-h02a` client ID with the reviewed `0.2.0` image.
+`job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template. Both
+target version `0.2.3`. Canary job `5788` is suspended after its clean bounded run. Production
+job `5789` is the sole active forwarder and uses the stable `ihv-sage-h02a` client ID.
 
 Production verification established:
 
-- The H02A task list showed the `0.2.0` production pod running without an end time or replacement,
-  while fresh Data API records proved successful publication.
-- The initial post-cutover Sage Data API proof returned 37 fresh `0.2.0` records across three
-  devices. Every metadata value was a string and every record retained `deviceName`, lowercase
-  `devEui`, `fCnt`, H02A identity, and the exact plugin image.
-- Live soil records exposed `°C`, `µS/cm`, and `%` for `temp_soil1` through `temp_soil4`,
-  `conduct_soil1` through `conduct_soil4`, and `water_soil1` through `water_soil4`. Atmospheric
-  and battery records exposed `ppm`, `%RH`, `hPa`, `°C`, and `V`.
-- The Sage Query Browser rendered those units beside each value and its expanded metadata showed
-  the mapped `device_label`, `block`, `slope`, `latitude`, and `longitude` fields where available.
+- Jenkins build `6` published the reviewed `84f9a8b` source for AMD64 and ARM64 at manifest-list
+  digest `sha256:340cace84379d3f19c3ec875e1fc5051cdddbc7d1b9b1ff5d1237e479a198c01`.
+- H02A canary job `5788` ran for about 11 minutes without failure before suspension. Previous
+  production job `5787` is suspended, and job `5789` is running the `0.2.3` image.
+- The initial post-cutover query returned 112 fresh records across 12 devices. All records kept
+  `deviceName`, `devEui`, `deduplicationId`, and `fCnt` metadata.
+- Four disconnected Dragino probes produced false
+  `external_temperature_sensor_available` records, displayed by Sage as `0`, with no
+  `temp_ds18b20 == 327.6` records. Mapped field metadata remained present.
 
 Verify the production path through both the Sage Data API and the H02A Latest Records page:
 
@@ -286,7 +269,7 @@ ssh waggle-dev-node-H02A \
 
 Completion requires the H02A **LoRaWAN Devices** count and EUIs to match a fresh ChirpStack
 enabled-device inventory (27 at the 2026-09-01 review snapshot), current `last_seen_at` values, a
-healthy Tracker deployment with zero restarts, and production forwarding job `5787` continuing
+healthy Tracker deployment with zero restarts, and production forwarding job `5789` continuing
 to publish measurements.
 
 ## References
