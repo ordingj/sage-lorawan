@@ -5,8 +5,10 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from functools import cache
 import json
 import math
+from pathlib import Path
 import re
 from typing import Any
 
@@ -57,6 +59,8 @@ _SENSECAP_MEASUREMENT_UNITS = {
 _HISTORY_FIELD_PATTERN = re.compile(r"^history_\d+_(?P<field>.+)$")
 _SENSECAP_VALUE_PATTERN = re.compile(r"^messages_(?P<index>\d+)_measurementvalue$")
 _SENSECAP_BATTERY_PATTERN = re.compile(r"^messages_\d+_battery$")
+_DEVICE_METADATA_PATH = Path(__file__).with_name("device_metadata.json")
+_DEVICE_METADATA_FIELDS = ("device_label", "block", "slope", "latitude", "longitude")
 
 
 class PayloadError(ValueError):
@@ -157,6 +161,7 @@ def _measurement_metadata(
         if value is not None:
             metadata[field] = _metadata_scalar(value, f"deviceInfo.{field}")
     metadata["devEui"] = str(metadata["devEui"]).lower()
+    metadata.update(_device_metadata(metadata["devEui"]))
     for field in _UPLINK_METADATA_FIELDS:
         value = payload.get(field)
         if value is not None:
@@ -263,6 +268,38 @@ def _metadata_scalar(value: object, field: str) -> str:
     if isinstance(value, float) and math.isfinite(value):
         return str(value)
     raise PayloadError(f"ChirpStack metadata {field} must be a finite scalar")
+
+
+@cache
+def _device_metadata_by_dev_eui() -> dict[str, dict[str, str]]:
+    try:
+        decoded = json.loads(_DEVICE_METADATA_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise PayloadError("bundled device metadata must be readable JSON") from error
+    if not isinstance(decoded, Mapping):
+        raise PayloadError("bundled device metadata must be a JSON object")
+
+    devices: dict[str, dict[str, str]] = {}
+    for dev_eui, values in decoded.items():
+        if not isinstance(dev_eui, str) or re.fullmatch(r"[0-9a-f]{16}", dev_eui) is None:
+            raise PayloadError("bundled device metadata keys must be lowercase DevEUIs")
+        if not isinstance(values, Mapping):
+            raise PayloadError(f"bundled device metadata for {dev_eui} must be an object")
+        unknown_fields = set(values) - set(_DEVICE_METADATA_FIELDS)
+        if unknown_fields:
+            raise PayloadError(
+                f"bundled device metadata for {dev_eui} has unsupported fields: "
+                f"{', '.join(sorted(unknown_fields))}"
+            )
+        devices[dev_eui] = {
+            field: _metadata_scalar(value, f"device_metadata.{dev_eui}.{field}")
+            for field, value in values.items()
+        }
+    return devices
+
+
+def _device_metadata(dev_eui: str) -> dict[str, str]:
+    return dict(_device_metadata_by_dev_eui().get(dev_eui.lower(), {}))
 
 
 def _best_receiver_value(value: object, key: str) -> int | float | None:

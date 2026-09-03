@@ -1,10 +1,11 @@
 # TODO
 
-<!-- working-on: Deploy version 0.2.0 to H02A and verify fresh measurements expose meta.units. -->
+<!-- working-on: Deploy version 0.2.0 to H02A and verify fresh measurements expose units and field metadata. -->
 
 ## Sage Forwarder Measurement Metadata
 
-- [/] Deploy version `0.2.0` to H02A and verify fresh measurements expose `meta.units`.
+- [/] Deploy version `0.2.0` to H02A and verify fresh measurements expose units and canonical
+      field metadata.
 
 - [x] Add Sage unit metadata to known physical sensor measurements.
   - The forwarder now emits plural `meta.units` for known battery, atmospheric, soil, UV-A,
@@ -12,6 +13,11 @@
     leaving unknown and operational fields unitless.
   - Focused payload contracts and the complete `make all` gate pass for version `0.2.0`; the
     current H02A production job remains on `0.1.1` until the reviewed release rollout below.
+
+- [x] Add canonical field context to Sage measurement metadata.
+  - Version `0.2.0` bundles the 26-device IHV-CENIC field-map snapshot and emits available
+    `device_label`, `block`, `slope`, `latitude`, and `longitude` values as strings by DevEUI.
+  - Missing fields and unmapped devices remain publishable without fabricated metadata.
 
 ## Sage Rollout Finalization
 
@@ -37,7 +43,8 @@
         conventional Sensor column remains blank as documented.
   - [ ] Roll the production forwarder to reviewed version `0.2.0`, then verify fresh
         `temp_soil`, atmospheric, soil, UV-A, and device-specific pressure records expose the
-        expected plural `meta.units` values in both the Sage Data API and portal.
+        expected plural `meta.units` values plus mapped `device_label`, `block`, `slope`,
+        `latitude`, and `longitude` fields in both the Sage Data API and portal.
   - [ ] Record the reviewed commits, ECR digest, Tracker deployment proof, final device count,
         and forwarder regression evidence in `README.md`, `CHANGELOG.md`, and this TODO; then mark
         the rollout complete.

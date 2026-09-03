@@ -1,0 +1,173 @@
+{
+  "24e124136f206762": {},
+  "24e124126f015410": {
+    "device_label": "CO₂ Sensor - P",
+    "block": "P",
+    "slope": "upslope",
+    "latitude": 38.461576282,
+    "longitude": -122.898458759
+  },
+  "24e124126f015418": {
+    "device_label": "CO₂ Sensor - Cc",
+    "block": "Cc",
+    "slope": "downslope",
+    "latitude": 38.459051941,
+    "longitude": -122.892380452
+  },
+  "24e124126f211868": {
+    "device_label": "CO₂ Sensor - B North",
+    "block": "B North",
+    "slope": "upslope",
+    "latitude": 38.461896796,
+    "longitude": -122.894511299
+  },
+  "24e124126f218775": {
+    "device_label": "CO₂ Sensor - F",
+    "block": "F",
+    "slope": "upslope",
+    "latitude": 38.459514741,
+    "longitude": -122.898578768
+  },
+  "24e124126f426180": {
+    "device_label": "CO₂ Sensor - B North",
+    "block": "B North",
+    "slope": "downslope",
+    "latitude": 38.463351931,
+    "longitude": -122.894541035
+  },
+  "24e124126f427032": {
+    "device_label": "CO₂ Sensor - Ca",
+    "block": "Ca",
+    "slope": "upslope",
+    "latitude": 38.460175551,
+    "longitude": -122.890505328
+  },
+  "24e124126f427423": {
+    "device_label": "CO₂ Sensor - F",
+    "block": "F",
+    "slope": "downslope",
+    "latitude": 38.459945424,
+    "longitude": -122.89871385
+  },
+  "24e124126f427446": {
+    "device_label": "CO₂ Sensor - P",
+    "block": "P",
+    "slope": "downslope",
+    "latitude": 38.462147093,
+    "longitude": -122.898496596
+  },
+  "24e124126e471477": {
+    "device_label": "Water Pressure Sensor",
+    "block": "Office",
+    "latitude": 38.455621926,
+    "longitude": -122.898781701
+  },
+  "a8404111f05c5ef9": {
+    "device_label": "Soil Matric Sensor - P",
+    "block": "P",
+    "slope": "upslope",
+    "latitude": 38.461576122,
+    "longitude": -122.898461072
+  },
+  "a8404185fc5c53fe": {
+    "device_label": "Soil Matric Sensor - Cc",
+    "block": "Cc",
+    "slope": "downslope",
+    "latitude": 38.459052778,
+    "longitude": -122.892380556
+  },
+  "a8404166ab5c5efb": {
+    "device_label": "Weather Station - I",
+    "block": "I",
+    "latitude": 38.455323544,
+    "longitude": -122.899242712
+  },
+  "a840415a365f1055": {
+    "device_label": "Soil Matric Sensor - B North",
+    "block": "B North",
+    "slope": "upslope",
+    "latitude": 38.461896796,
+    "longitude": -122.894511299
+  },
+  "a840412d525f1056": {
+    "device_label": "Soil Matric Sensor - F",
+    "block": "F",
+    "slope": "upslope",
+    "latitude": 38.459500079,
+    "longitude": -122.898582038
+  },
+  "a8404117585fd05d": {
+    "device_label": "UV Sensor",
+    "block": "I",
+    "latitude": 38.455323544,
+    "longitude": -122.899242712
+  },
+  "a8404169155dcab2": {
+    "device_label": "Soil Sensor - Cc",
+    "block": "Cc",
+    "slope": "downslope",
+    "latitude": 38.459040692,
+    "longitude": -122.892386971
+  },
+  "a84041d4915dcaab": {
+    "device_label": "Soil Sensor - P",
+    "block": "P",
+    "slope": "upslope",
+    "latitude": 38.461576282,
+    "longitude": -122.898458759
+  },
+  "a8404101e35dd92b": {
+    "device_label": "Soil Sensor - B North",
+    "block": "B North",
+    "slope": "upslope",
+    "latitude": 38.461896796,
+    "longitude": -122.894511299
+  },
+  "a840412f365dd933": {
+    "device_label": "Soil Sensor - F",
+    "block": "F",
+    "slope": "upslope",
+    "latitude": 38.459513484,
+    "longitude": -122.898581127
+  },
+  "a84041d7245dcd90": {
+    "device_label": "Soil Sensor (Quad) - P",
+    "block": "P",
+    "slope": "downslope",
+    "latitude": 38.462145901,
+    "longitude": -122.898487708
+  },
+  "a840418ea85dcd91": {
+    "device_label": "Soil Sensor (Quad) - Ca",
+    "block": "Ca",
+    "slope": "upslope",
+    "latitude": 38.46017148,
+    "longitude": -122.890502608
+  },
+  "a840417c755dd3cf": {
+    "device_label": "Soil Sensor (Quad) - F",
+    "block": "F",
+    "slope": "downslope",
+    "latitude": 38.459945424,
+    "longitude": -122.89871385
+  },
+  "a84041d8ec5dcd94": {
+    "device_label": "Soil Sensor (Quad) - B North",
+    "block": "B North",
+    "slope": "downslope",
+    "latitude": 38.463351931,
+    "longitude": -122.894541035
+  },
+  "2cf7f1c06220001b": {
+    "device_label": "CO₂ Sensor - Office (Inside)",
+    "block": "Office",
+    "latitude": 38.455835551,
+    "longitude": -122.898681052
+  },
+  "2cf7f1c06220006f": {
+    "device_label": "CO₂ Sensor - Office (Outside)",
+    "block": "Office",
+    "latitude": 38.455694223,
+    "longitude": -122.898767632
+  }
+}

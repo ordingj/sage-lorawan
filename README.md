@@ -2,8 +2,9 @@
 
 > **Status:** version `0.1.1` is built and public in the Sage Edge Code Repository (ECR).
 > Canary job `5781` passed and was suspended; production job `5782` is active on H02A.
-> Version `0.2.0` adds physical-measurement unit metadata and the external-ChirpStack Tracker
-> mode described below; it is prepared for owner review and has not been published or deployed.
+> Version `0.2.0` adds physical-measurement units, canonical field-deployment metadata, and the
+> external-ChirpStack Tracker mode described below; it is prepared for owner review and has not
+> been published or deployed.
 
 ECR image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.1.1`.
 
@@ -91,6 +92,22 @@ deduplication ID, frame counter, FPort, data rate, and the best receiver RSSI/SN
 values are serialized as strings because that is the PyWaggle publication contract; decoded
 measurement values retain their bool, number, or string types. Device variables and raw payload
 bytes are never published.
+
+The app bundles a release snapshot of the canonical IHV-CENIC
+`dashboard/device_block_map.json` mapping, keyed by lowercase DevEUI. For the 26 mapped devices,
+each measurement also carries every available field-context value as string metadata:
+
+| Sage metadata       | Canonical device-map field |
+| ------------------- | -------------------------- |
+| `meta.device_label` | `label`                    |
+| `meta.block`        | `block`                    |
+| `meta.slope`        | `slope`                    |
+| `meta.latitude`     | `latitude`                 |
+| `meta.longitude`    | `longitude`                |
+
+Missing values are omitted rather than guessed, and an uplink from an unmapped DevEUI continues
+to publish without field-context metadata. ChirpStack tags remain separately available with
+their normalized `_tag` suffixes.
 
 Known physical measurements also carry the plural `meta.units` field consumed by the Sage
 portal. The forwarder currently assigns:

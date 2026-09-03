@@ -19,6 +19,8 @@
 - Plural `meta.units` metadata for known physical measurements, including device-specific
   pressure units, numbered soil probes, SenseCAP measurement IDs, and historical Milesight
   values; unknown and operational fields remain unitless.
+- Canonical `device_label`, `block`, `slope`, `latitude`, and `longitude` metadata for the 26
+  mapped IHV-CENIC telemetry devices, joined by DevEUI from the field-device map snapshot.
 
 ### Changed
 

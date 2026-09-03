@@ -63,6 +63,11 @@ def test_payload_flattens_existing_object_and_preserves_source_identity() -> Non
     metadata = records_by_name["batv"].metadata
     assert metadata["deviceName"] == "SDI-12-LS-US915-1"
     assert metadata["devEui"] == "a8404111f05c5ef9"
+    assert metadata["device_label"] == "Soil Matric Sensor - P"
+    assert metadata["block"] == "P"
+    assert metadata["slope"] == "upslope"
+    assert metadata["latitude"] == "38.461576122"
+    assert metadata["longitude"] == "-122.898461072"
     assert metadata["fCnt"] == "9921"
     assert metadata["block_name_tag"] == "Block 1"
     assert metadata["rssi"] == "-91"
@@ -74,6 +79,15 @@ def test_payload_flattens_existing_object_and_preserves_source_identity() -> Non
     assert "units" not in records_by_name["flags_0"].metadata
     assert "units" not in records_by_name["location_latitude"].metadata
     assert "data" not in metadata
+
+
+def test_payload_leaves_field_metadata_absent_for_unmapped_device() -> None:
+    payload = _payload()
+    payload["deviceInfo"]["devEui"] = "0000000000000001"
+
+    metadata = measurements_from_payload(json.dumps(payload))[0].metadata
+
+    assert not {"device_label", "block", "slope", "latitude", "longitude"} & metadata.keys()
 
 
 def test_payload_adds_units_to_known_physical_measurements_only() -> None:
