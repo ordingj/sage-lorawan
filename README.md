@@ -139,8 +139,8 @@ and acknowledged so one poison message cannot block the persistent session.
 
 Tracker is not necessary for the working MQTT-to-PyWaggle measurement path. It adds LoRaWAN
 device and connection inventory to the Sage portal through a separate H02A deployment. Version
-`0.2.4` includes live-discovered normalization for Sage Auth's device-name and battery-decimal
-contracts.
+`0.2.5` includes live-discovered normalization for Sage Auth's device-name and battery-decimal
+contracts plus bounded retry for transient Sage API and H02A DNS failures.
 
 Tracker mode connects directly to the existing IHV-CENIC MQTT broker and ChirpStack v4 gRPC
 API on the Mac Studio. At startup it enumerates every enabled device in the configured tenant;
@@ -170,8 +170,9 @@ metadata or historical records.
 The Tracker uses a second persistent QoS-1 MQTT client ID,
 `ihv-sage-h02a-tracker`. It completes the full startup inventory before subscribing, then
 acknowledges each live uplink only after ChirpStack lookup and Sage registration both succeed. A
-temporary API failure leaves the delivery unacknowledged and exits the process so Kubernetes can
-restart it without losing the inventory event.
+temporary API or DNS failure is retried with bounded exponential backoff. If all attempts fail,
+the delivery remains unacknowledged and the process exits so Kubernetes can restart it without
+losing the inventory event.
 
 ## Validate locally
 
@@ -201,9 +202,9 @@ current publishing workflow. The `homepage` in `sage.yaml` points to that exact 
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
 `job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template. Both
-target prepared version `0.2.4`. Canary job `5788` is suspended after its earlier clean bounded
+target prepared version `0.2.5`. Canary job `5788` is suspended after its earlier clean bounded
 run. Production job `5789` remains the sole active forwarder on version `0.2.3` and uses the
-stable `ihv-sage-h02a` client ID until the `0.2.4` rollout is accepted.
+stable `ihv-sage-h02a` client ID until the `0.2.5` rollout is accepted.
 
 Production verification established:
 
@@ -266,9 +267,12 @@ ssh waggle-dev-node-H02A \
 ```
 
 The 2026-09-03 preflight reproduced and repaired Sage Auth's rejection of unrounded ChirpStack
-battery floats, then reconciled all 27 freshly enumerated enabled devices. Completion still
-requires the long-running H02A deployment to report zero restarts, keep current connection
-timestamps, match all exact DevEUIs, and leave production forwarder job `5789` publishing.
+battery floats, then reconciled all 27 freshly enumerated enabled devices. The first `0.2.4`
+deployment exposed intermittent H02A external DNS resolution during Sage Auth requests, so
+`0.2.5` retries transient DNS, rate-limit, and server failures before failing a delivery.
+Completion still requires the long-running deployment to report zero restarts, keep current
+connection timestamps, match all exact DevEUIs, and leave production forwarder job `5789`
+publishing until its reviewed replacement is healthy.
 
 ## References
 

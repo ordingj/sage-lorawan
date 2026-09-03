@@ -10,6 +10,7 @@ import logging
 import queue
 import re
 import threading
+import time
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urljoin, urlsplit
@@ -25,6 +26,7 @@ from .payloads import PayloadError
 
 _HARDWARE_MODEL_PATTERN = re.compile(r"\([^)]*\)")
 _HTTP_TIMEOUT_SECONDS = 20
+_HTTP_RETRY_DELAYS_SECONDS = (1, 2, 4, 8, 16)
 _RPC_TIMEOUT_SECONDS = 20
 
 
@@ -286,28 +288,50 @@ class SageHttpTransport:
                 "Content-Type": "application/json",
             },
         )
-        try:
-            with urlopen(request, timeout=_HTTP_TIMEOUT_SECONDS) as response:  # noqa: S310
-                decoded = json.load(response)
-        except HTTPError as error:
-            if error.code == 404 and method == "GET":
-                return None
-            detail = (
-                error.read().decode("utf-8", errors="replace")[:500]
-                if error.fp is not None
-                else "no response body"
-            )
-            raise RuntimeError(
-                f"Sage inventory request {method} {path} failed with HTTP {error.code}: "
-                f"{detail}"
-            ) from error
-        except URLError as error:
-            raise RuntimeError(f"Sage inventory request {method} {path} failed") from error
+        for attempt in range(len(_HTTP_RETRY_DELAYS_SECONDS) + 1):
+            try:
+                with urlopen(request, timeout=_HTTP_TIMEOUT_SECONDS) as response:  # noqa: S310
+                    decoded = json.load(response)
+                break
+            except HTTPError as error:
+                if error.code == 404 and method == "GET":
+                    return None
+                if error.code in {429, 500, 502, 503, 504} and attempt < len(
+                    _HTTP_RETRY_DELAYS_SECONDS
+                ):
+                    self._wait_to_retry(method, path, attempt, f"HTTP {error.code}")
+                    continue
+                detail = (
+                    error.read().decode("utf-8", errors="replace")[:500]
+                    if error.fp is not None
+                    else "no response body"
+                )
+                raise RuntimeError(
+                    f"Sage inventory request {method} {path} failed with HTTP {error.code}: "
+                    f"{detail}"
+                ) from error
+            except URLError as error:
+                if attempt < len(_HTTP_RETRY_DELAYS_SECONDS):
+                    self._wait_to_retry(method, path, attempt, str(error.reason))
+                    continue
+                raise RuntimeError(f"Sage inventory request {method} {path} failed") from error
         if not isinstance(decoded, Mapping):
             raise RuntimeError(
                 f"Sage inventory request {method} {path} returned non-object JSON"
             )
         return decoded
+
+    @staticmethod
+    def _wait_to_retry(method: str, path: str, attempt: int, reason: str) -> None:
+        delay = _HTTP_RETRY_DELAYS_SECONDS[attempt]
+        logging.warning(
+            "Sage inventory request %s %s failed (%s); retrying in %ss",
+            method,
+            path,
+            reason,
+            delay,
+        )
+        time.sleep(delay)
 
 
 class SageRegistry:

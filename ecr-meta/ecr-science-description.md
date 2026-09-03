@@ -47,6 +47,6 @@ with `deduplicationId`, `devEui`, and `fCnt`.
 
 ## View the data
 
-Open the [H02A Query Browser](https://portal.sagecontinuum.org/query-browser?nodes=H02A&apps=registry.sagecontinuum.org%2Fordingj%2Fihv-cenic-chirpstack-devices%3A0.2.4.*&start=-5m&page=0)
+Open the [H02A Query Browser](https://portal.sagecontinuum.org/query-browser?nodes=H02A&apps=registry.sagecontinuum.org%2Fordingj%2Fihv-cenic-chirpstack-devices%3A0.2.5.*&start=-5m&page=0)
 to view current measurements. Units appear beside supported values. Enable **meta** above the
 results table to display the device label, block, slope, coordinates, and other provenance.

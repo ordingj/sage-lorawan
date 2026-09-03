@@ -6,7 +6,7 @@ from io import BytesIO
 import json
 from pathlib import Path
 from typing import Any
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 from chirpstack_api.api import application_pb2, application_pb2_grpc
 from chirpstack_api.api import device_pb2, device_pb2_grpc
@@ -297,6 +297,58 @@ def test_http_transport_authenticates_and_only_get_uses_404_as_missing(
         transport.request("POST", "lorawandevices/", {"deveui": "missing"})
 
 
+def test_http_transport_retries_transient_dns_failure(monkeypatch: Any) -> None:
+    attempts = 0
+    delays: list[int] = []
+
+    def transient_then_success(_request: object, *, timeout: int) -> BytesIO:
+        nonlocal attempts
+        attempts += 1
+        assert timeout == 20
+        if attempts < 3:
+            raise URLError("temporary DNS failure")
+        return BytesIO(b'{"id": 35}')
+
+    monkeypatch.setattr("app.tracker.urlopen", transient_then_success)
+    monkeypatch.setattr("app.tracker.time.sleep", delays.append)
+
+    result = SageHttpTransport("https://auth.sagecontinuum.org", "node-token").request(
+        "GET", "sensorhardwares/SDI-12/"
+    )
+
+    assert result == {"id": 35}
+    assert attempts == 3
+    assert delays == [1, 2]
+
+
+def test_http_transport_stops_after_bounded_transient_retries(monkeypatch: Any) -> None:
+    attempts = 0
+    delays: list[int] = []
+
+    def unavailable(_request: object, *, timeout: int) -> BytesIO:
+        nonlocal attempts
+        attempts += 1
+        assert timeout == 20
+        raise HTTPError(
+            "https://auth.sagecontinuum.org/lorawandevices/",
+            503,
+            "unavailable",
+            {},
+            None,
+        )
+
+    monkeypatch.setattr("app.tracker.urlopen", unavailable)
+    monkeypatch.setattr("app.tracker.time.sleep", delays.append)
+
+    with pytest.raises(RuntimeError, match="POST lorawandevices/ failed with HTTP 503"):
+        SageHttpTransport("https://auth.sagecontinuum.org", "node-token").request(
+            "POST", "lorawandevices/", {"deveui": "missing"}
+        )
+
+    assert attempts == 6
+    assert delays == [1, 2, 4, 8, 16]
+
+
 class _FakeClient:
     def __init__(self, **kwargs: object) -> None:
         self.kwargs = kwargs
@@ -399,7 +451,7 @@ def test_tracker_deployment_is_h02a_scoped_and_secret_backed() -> None:
     assert deployment["metadata"]["name"] == "ihv-cenic-chirpstack-tracker"
     assert deployment["spec"]["strategy"] == {"type": "Recreate"}
     assert pod["nodeSelector"] == {"zone": "core"}
-    assert "ihv-cenic-chirpstack-devices:0.2.4" in container["image"]
+    assert "ihv-cenic-chirpstack-devices:0.2.5" in container["image"]
     assert "--mode" in container["args"]
     assert "tracker" in container["args"]
     assert "192.168.1.200" in container["args"]

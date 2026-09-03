@@ -1,5 +1,5 @@
 name: "ihv-cenic-chirpstack-devices"
-version: "0.2.4"
+version: "0.2.5"
 description: "Publish decoded IHV-CENIC vineyard LoRaWAN sensor observations through Sage"
 keywords: "LoRaWAN, ChirpStack, MQTT, vineyard"
 authors: "Joseph Ording, IHV-CENIC"

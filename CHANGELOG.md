@@ -33,6 +33,9 @@
 
 ### Fixed
 
+- Version `0.2.5` retries transient DNS, rate-limit, and Sage server failures with bounded
+  exponential backoff. The safeguard was added after the first H02A Tracker deployment exposed
+  intermittent external DNS resolution and entered a restart loop during startup reconciliation.
 - Version `0.2.4` applies the full documented sensor-sentinel policy before Sage publication:
   unsupported SDI-12 ports and `BatV == 7.2`, disconnected Dragino soil probes, TEROS-22 error
   codes, and Milesight EM500 CO2 and pressure sentinels no longer become physical measurements.
@@ -49,6 +52,10 @@
 
 ### Deployment
 
+- Version `0.2.4` was built by Jenkins build `7` for AMD64 and ARM64 at manifest-list digest
+  `sha256:0eb4de931a874155cfa81badb1575c289a96deb9118235499278c7043ee776a9`.
+  Its Tracker reconciled all 27 enabled devices once but was not accepted for ongoing deployment
+  after intermittent H02A DNS failures caused repeated restarts.
 - Version `0.2.3` was built by Jenkins build `6` from commit `84f9a8b` for AMD64 and ARM64.
   Its manifest-list digest is
   `sha256:340cace84379d3f19c3ec875e1fc5051cdddbc7d1b9b1ff5d1237e479a198c01`.

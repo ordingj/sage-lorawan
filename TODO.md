@@ -2,11 +2,14 @@
 
 ## Sage Forwarder Measurement Metadata
 
-- [/] Publish and roll out version `0.2.4` with complete sensor-sentinel safeguards.
+- [/] Publish and roll out version `0.2.5` with complete sensor-sentinel safeguards.
   - [x] Cover invalid SDI-12 ports and battery voltage, Dragino soil-probe availability,
         TEROS-22 errors, and Milesight EM500 CO2/pressure errors with focused tests.
   - [ ] Publish the reviewed AMD64/ARM64 image, run a bounded H02A canary, and roll production
         forward only after current records prove the invalid values remain absent.
+  - Version `0.2.4` was published by Jenkins build `7`, but the first Tracker rollout exposed
+    intermittent H02A DNS resolution. Version `0.2.5` adds bounded transient-request retries and
+    is the replacement release candidate.
 
 - [x] Suppress Dragino's `temp_ds18b20 == 327.6` unavailable sentinel and publish an
       external-temperature-sensor availability measurement instead.
