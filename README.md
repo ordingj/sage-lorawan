@@ -1,13 +1,18 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> Release record: version `0.2.5` replaces `0.2.4`. The retained rollout record names
-> production forwarder job `5792` and the inventory-only Tracker on H02A. This maintenance
-> change does not publish a new image or verify the current production state.
+> Published candidate: version `0.2.6` upgrades the Python runtime and closes HTTP error
+> responses. Jenkins build `9` publishes reviewed source `df193ac` for AMD64 and ARM64.
+> This publication does not activate a production workload. A new live canary remains required.
 
-Recorded image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.5`.
+Published image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.6`.
 
-Candidate version `0.2.6` uses the digest-pinned IHV Python 3.14.7 Alpine base. Dependency installation,
-application tests and a native container smoke check must pass before publication.
+Manifest-list digest: `sha256:5b6844902e7d5c552e6b07d8cee2e39a1a4f36eb4da79b88eb2bdb7172fa4a42`.
+Independent image reads verify both architectures, Python 3.14.7, user 10001 and all six
+application source files. Both published images pass CLI help.
+
+ARM64 runs natively in the local check. AMD64 runs through Docker emulation.
+Hosted validation pipeline `92751` passes for the published source commit.
+The accepted `0.2.5` image digest remains unchanged.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic. Its default mode republishes decoded measurements through PyWaggle
@@ -206,8 +211,8 @@ the mirror's `main` branch synchronized with reviewed GitLab commits before ever
 `job.canary.yaml` is the bounded dry-run template. `job.yaml` is the production template. Both
 name different release stages: canary `0.2.6` and accepted production `0.2.5`. The accepted
 canary is job `5791`. The retained record names
-production job `5792` with the stable `ihv-sage-h02a` client ID. The Python base update remains
-unpublished until the release checks pass. A new canary must pass before production activation.
+production job `5792` with the stable `ihv-sage-h02a` client ID. The Python base update is
+published as `0.2.6`. A new live canary must pass before production activation.
 
 Production verification established:
 

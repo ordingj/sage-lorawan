@@ -1,5 +1,13 @@
 # TODO
 
+## Python 3.14 release
+
+- [x] Publish version `0.2.6` with the qualified Python 3.14.7 base and HTTP response cleanup.
+  - Jenkins build `9` publishes reviewed source `df193ac` for AMD64 and ARM64.
+  - Hosted pipeline `92751`, all 36 tests, source hashes and both published CLI checks pass.
+  - Keep the accepted 0.2.5 image and production templates. A new live canary remains required
+    before production activation. This publication makes no workload change.
+
 ## Sage Forwarder Measurement Metadata
 
 - [x] Publish and roll out version `0.2.5` with complete sensor-sentinel safeguards.

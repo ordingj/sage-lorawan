@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.6 - 2026-11-12
+
+- Publish reviewed source `df193ac745d0b079fa3efcb55b1dc1acc6f36af3` through Jenkins build 9.
+  The AMD64/ARM64 manifest-list digest is
+  `sha256:5b6844902e7d5c552e6b07d8cee2e39a1a4f36eb4da79b88eb2bdb7172fa4a42`.
+- Qualify Python 3.14.7, both published CLI paths and exact application source hashes.
+  Hosted pipeline 92751 and all 36 tests pass. ARM64 runs natively. AMD64 uses local emulation.
+- Preserve the accepted 0.2.5 image. Keep production activation gated on a new live canary.
+  No workload activation occurs in this publication.
+
 ## Unreleased
 
 ### Python runtime qualification
