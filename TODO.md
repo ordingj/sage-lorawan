@@ -4,9 +4,13 @@
       rejected archive events, preserve valid outputs, verify acknowledgement without publication,
       and keep other empty objects invalid. All 40 tests, lint, native image build and CLI smoke
       checks pass. Publication and live qualification remain separate.
-- [ ] Publish and qualify `0.2.7`, then activate only after a passing live canary. Preserve
-      production `0.2.5`, Tracker, rollback, source identity and the zero-error gate. Verify the
-      previous writer stops and fresh destination records appear after cutover.
+- [x] Publish and image-qualify `0.2.7`. Jenkins build `10` succeeds from reviewed source
+      `ecbb0d2`, and hosted pipeline `92826` passes. Both published platform images pass CLI,
+      source-hash and unsupported-port checks. Keep 0.2.5 and 0.2.6 registry digests unchanged.
+- [ ] Pass the live `0.2.7` canary, then verify cutover. Require ten uninterrupted minutes,
+      at least two known unsupported-port events filtered normally and the zero-error gate.
+      Preserve production 0.2.5, Tracker and rollback. Verify the previous writer stops and
+      fresh destination records appear after cutover.
 
 ## Python 3.14 release
 

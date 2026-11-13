@@ -2,6 +2,13 @@
 
 ## 2026-11-13
 
+- Publish `0.2.7` through Jenkins build `10` from reviewed source `ecbb0d2`. Hosted pipeline
+  `92826` passes. Both platform images pass CLI and unsupported-port checks, with all six
+  application source hashes matching. The manifest-list digest is
+  `sha256:cd955af23fb6cc0f414341387a40e4f73be152e23fae153ba96e78823ea0ef25`.
+  Keep both earlier published artifacts unchanged. Production and Tracker remain on `0.2.5`
+  pending a passing live canary and verified cutover.
+
 - Prepare candidate `0.2.7`. Apply the existing unsupported SDI-12 port filter before
   empty-object validation. Exact replay identifies both rejected events as deliberately empty
   FPort 6 objects. Both now return no measurements. Nearby FPort 2 outputs retain exact hashes.

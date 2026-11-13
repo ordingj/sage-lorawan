@@ -1,12 +1,25 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> Candidate `0.2.7` applies the existing unsupported SDI-12 port policy before empty-object
+> Published candidate `0.2.7` applies the existing unsupported SDI-12 port policy before empty-object
 > validation. Exact archive replay filters both rejected FPort 6 events and preserves valid
-> measurements. Publication and a passing live canary remain required before activation.
+> measurements. A passing live canary remains required before activation.
 
 The fix changes only the order of the existing checks. Valid measurements keep their values,
 source times and metadata. Both archived FPort 6 events now return no records. The nearby
 FPort 2 controls retain their exact output hashes. Other empty decoded objects remain errors.
+
+Jenkins build `10` publishes reviewed source `ecbb0d2`. Hosted pipeline `92826` passes.
+Both published `0.2.7` images pass CLI and unsupported-port checks. All six application
+files match the reviewed source. ARM64 runs natively. AMD64 uses local Docker emulation.
+The source tests pass all 40 cases. The image keeps Python 3.14.7 and user 10001.
+
+Current image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.7`.
+
+Current manifest-list digest:
+`sha256:cd955af23fb6cc0f414341387a40e4f73be152e23fae153ba96e78823ea0ef25`.
+
+Production and Tracker stay on `0.2.5` pending their required live checks. Keep both earlier
+published image digests unchanged. The retained `0.2.6` publication record follows.
 
 Previously published image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.6`.
 
@@ -216,8 +229,8 @@ the mirror's `main` branch synchronized with reviewed GitLab commits before ever
 name different release stages: canary `0.2.7` and accepted production `0.2.5`. The accepted
 canary is job `5791`. The retained record names
 production job `5792` with the stable `ihv-sage-h02a` client ID. The Python base update is
-published as `0.2.6`. The FPort 6 ordering fix is candidate `0.2.7`. It requires publication
-and a passing live canary before production activation.
+published as `0.2.6`. The FPort 6 ordering fix is published as `0.2.7`. It requires a passing live canary before
+production activation.
 
 Production verification established:
 
