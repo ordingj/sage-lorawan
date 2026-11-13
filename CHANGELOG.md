@@ -2,6 +2,15 @@
 
 ## 2026-11-13
 
+- Roll out Tracker `0.2.7` after a native H02A canary. Both startups reconcile all 27 devices.
+  The canary records 14 live updates across ten devices in 171 seconds. Production records
+  45 live updates across 21 devices at the final check. Both have zero warnings, errors or
+  restarts. Three inventory audits preserve all 27 connection IDs and hardware links, with no
+  extra registrations. Keep credentials, settings and the stable MQTT session. Remove both
+  owned helpers. The forwarder stays unchanged, and 86 fresh cloud records pass the destination
+  check. All 40 tests, lint, native image build and CLI checks pass. Update only the Tracker
+  image and its manifest assertion. Retain the immutable `0.2.5` manifest for rollback.
+
 - Activate `0.2.7` as H02A job `5871` after the user accepts the clean 3,019-second canary
   despite its one-event coverage. Preserve the original failed two-event result. Suspend job
   `5792`, verify native goal withdrawal and old-writer absence, then start the exact published

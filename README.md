@@ -18,8 +18,18 @@ Current image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:
 Current manifest-list digest:
 `sha256:cd955af23fb6cc0f414341387a40e4f73be152e23fae153ba96e78823ea0ef25`.
 
-Production runs `0.2.7`. Tracker remains on `0.2.5`. Job `5792` stays suspended with its original
-`0.2.5` spec for rollback. Both earlier published image digests remain unchanged.
+Both the forwarder and Tracker run `0.2.7`. Tracker passes its own native canary before its
+image-only Recreate rollout. Both startups reconcile all 27 devices. The canary records 14 live
+updates across ten devices in 171 seconds. Production records 45 live updates across 21 devices
+at the final check. Both have zero warnings, errors or restarts. Three inventory audits retain
+all 27 connection IDs and hardware links, with no extra registrations. Credentials, settings
+and the stable Tracker MQTT session stay unchanged. Both owned helpers are removed.
+The forwarder keeps its Pod and container. Its fresh destination check passes with 86 records.
+All 40 tests, lint, native image build and CLI checks pass.
+
+Job `5792` stays suspended with its original `0.2.5` spec for forwarder rollback. Retain the
+[immutable Tracker 0.2.5 manifest](https://gitlab.nrp-nautilus.io/ihv-cenic1/sage-lorawan/-/blob/e5f7d307aee4823a2b67ed48515fb05dd4e9b363/deploy/tracker-deployment.yaml)
+for Tracker rollback. Both earlier published image digests remain unchanged.
 
 The accepted canary has 266 uplinks, 1,963 measurements and zero warnings, errors, invalid
 sentinels or restarts. It sees one source-correlated empty SDI-12 FPort 6 event. The original
@@ -28,7 +38,7 @@ All other canary and cutover gates remain required.
 
 Before submission, native checks confirm goal withdrawal and absence of every old app writer
 across 149 seconds and again immediately before submission. The new Pod is the sole API and
-runtime writer on the published digest, with zero restarts. Tracker keeps its original container.
+runtime writer on the published digest, with zero restarts. Tracker retains its original container at that forwarder cutover.
 Fresh readback returns 112 exact-version records from 12 source events across nine devices.
 All source identities and expected physical units pass. No invalid sentinel reaches the destination.
 The stable MQTT client and queued deliveries are preserved.

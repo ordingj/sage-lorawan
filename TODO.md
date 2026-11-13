@@ -1,5 +1,12 @@
 # TODO
 
+- [x] Qualify and roll out Tracker `0.2.7`. The native canary and production startup reconcile
+      all 27 devices. Three inventory audits retain every connection ID and hardware link, with
+      exactly 27 active connections. Production has 45 live updates across 21 devices and zero
+      warnings, errors or restarts at the final check. Preserve credentials, settings and the
+      stable MQTT session. Remove both owned helpers. The forwarder remains unchanged, and 86
+      fresh cloud records pass the destination check. All 40 tests, lint, native build and CLI
+      checks pass. Keep the immutable `0.2.5` Tracker manifest for rollback.
 - [x] Fix the unsupported SDI-12 empty-object ordering in candidate `0.2.7`. Replay the exact
       rejected archive events, preserve valid outputs, verify acknowledgement without publication,
       and keep other empty objects invalid. All 40 tests, lint, native image build and CLI smoke
@@ -12,8 +19,8 @@
       explicit acceptance. Job `5792` is suspended, and native checks prove the old writer stops
       before job `5871` starts. The exact published image is the sole native writer. Fresh
       destination readback verifies 112 records from 12 source events across nine devices,
-      with complete identity, expected units and no invalid sentinels. Keep Tracker on 0.2.5
-      and retain the old spec and job for rollback. Local loader recovery remains separate.
+      with complete identity, expected units and no invalid sentinels. Tracker remains on 0.2.5
+      at that cutover. Retain the old spec and job for rollback. Local loader recovery remains separate.
 
 ## Python 3.14 release
 
