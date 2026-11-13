@@ -1,8 +1,8 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> Published candidate `0.2.7` applies the existing unsupported SDI-12 port policy before empty-object
-> validation. Exact archive replay filters both rejected FPort 6 events and preserves valid
-> measurements. A passing live canary remains required before activation.
+> Production job `5871` runs `0.2.7` on H02A. The user accepts the clean 3,019-second live
+> canary and directs cutover despite its one-event coverage. The previous writer is stopped.
+> Fresh destination records verify the exact new image, source identities, units and sentinel controls.
 
 The fix changes only the order of the existing checks. Valid measurements keep their values,
 source times and metadata. Both archived FPort 6 events now return no records. The nearby
@@ -18,8 +18,24 @@ Current image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:
 Current manifest-list digest:
 `sha256:cd955af23fb6cc0f414341387a40e4f73be152e23fae153ba96e78823ea0ef25`.
 
-Production and Tracker stay on `0.2.5` pending their required live checks. Keep both earlier
-published image digests unchanged. The retained `0.2.6` publication record follows.
+Production runs `0.2.7`. Tracker remains on `0.2.5`. Job `5792` stays suspended with its original
+`0.2.5` spec for rollback. Both earlier published image digests remain unchanged.
+
+The accepted canary has 266 uplinks, 1,963 measurements and zero warnings, errors, invalid
+sentinels or restarts. It sees one source-correlated empty SDI-12 FPort 6 event. The original
+two-event result remains unmet. The user's explicit acceptance applies to that exact run.
+All other canary and cutover gates remain required.
+
+Before submission, native checks confirm goal withdrawal and absence of every old app writer
+across 149 seconds and again immediately before submission. The new Pod is the sole API and
+runtime writer on the published digest, with zero restarts. Tracker keeps its original container.
+Fresh readback returns 112 exact-version records from 12 source events across nine devices.
+All source identities and expected physical units pass. No invalid sentinel reaches the destination.
+The stable MQTT client and queued deliveries are preserved.
+
+The local InfluxDB loader remains separately paused for data-preserving recovery. This rollout
+qualifies Sage cloud delivery. It does not qualify that loader's native storage or replay.
+The retained `0.2.6` publication record follows.
 
 Previously published image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.6`.
 
@@ -225,21 +241,23 @@ Sage's ECR source is the public
 current publishing workflow. The `homepage` in `sage.yaml` points to that exact source. Keep
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
-`job.canary.yaml` is the bounded dry-run template. `job.yaml` is the production template. Both
-name different release stages: canary `0.2.7` and accepted production `0.2.5`. The accepted
-canary is job `5791`. The retained record names
-production job `5792` with the stable `ihv-sage-h02a` client ID. The Python base update is
-published as `0.2.6`. The FPort 6 ordering fix is published as `0.2.7`. It requires a passing live canary before
-production activation.
+`job.canary.yaml` is the bounded dry-run template. `job.yaml` is the active `0.2.7` production
+spec for H02A and the stable `ihv-sage-h02a` client ID. The Python base update was published
+as `0.2.6`. The FPort 6 ordering fix is published as `0.2.7` and active as job `5871`.
 
-Production verification established:
+For rollback, retain suspended job `5792` and its
+[immutable 0.2.5 spec](https://gitlab.nrp-nautilus.io/ihv-cenic1/sage-lorawan/-/blob/3d8b3ca8554fb2c98c8968270a82141a9008bec2/job.yaml).
+Stop and verify the new writer before resuming or recreating that spec. Preserve the production
+MQTT session. Require fresh 0.2.5 readback after rollback. Tracker needs its own qualification.
+
+The earlier 0.2.5 production verification established:
 
 - Jenkins build `8` published reviewed commit `78f7ab1` for AMD64 and ARM64 at manifest-list
   digest `sha256:587d318403966ad82010378fbda6cae81c37094982a37e0bd2e51c0d05c6f498`.
 - H02A dry-run canary job `5791` ran for 10 minutes 50 seconds and processed 53 uplinks with zero
   invalid sentinel measurements, runtime failures, or restarts before suspension. Its lingering
   pod and an orphaned pod from removed canary `5785` were explicitly removed.
-- Previous production job `5789` was suspended, and production job `5792` is the sole active
+- Previous production job `5789` was suspended, and production job `5792` became the sole active
   forwarder on version `0.2.5` using the stable `ihv-sage-h02a` client ID.
 - The initial post-cutover Data API query returned 110 fresh `0.2.5` records from 17 uplinks
   across 13 devices. Every record retained `deviceName`, `devEui`, `deduplicationId`, and `fCnt`;

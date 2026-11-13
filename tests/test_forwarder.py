@@ -512,7 +512,7 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert job["nodes"] == {"H02A": True}
     plugin = job["plugins"][0]
     assert plugin["name"] == "ihv-cenic-chirpstack-devices"
-    assert "ihv-cenic-chirpstack-devices:0.2.5" in plugin["pluginSpec"]["image"]
+    assert "ihv-cenic-chirpstack-devices:0.2.7" in plugin["pluginSpec"]["image"]
     assert "192.168.1.200" in plugin["pluginSpec"]["args"]
     assert "ihv-sage-h02a" in plugin["pluginSpec"]["args"]
     canary_args = canary_job["plugins"][0]["pluginSpec"]["args"]

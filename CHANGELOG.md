@@ -2,6 +2,13 @@
 
 ## 2026-11-13
 
+- Activate `0.2.7` as H02A job `5871` after the user accepts the clean 3,019-second canary
+  despite its one-event coverage. Preserve the original failed two-event result. Suspend job
+  `5792`, verify native goal withdrawal and old-writer absence, then start the exact published
+  image. Fresh readback verifies 112 records from 12 events across nine devices, with identity,
+  units and sentinel controls. Keep Tracker on `0.2.5`, preserve the stable MQTT session and
+  retain the suspended old job and immutable spec for rollback. Local loader recovery remains open.
+
 - Publish `0.2.7` through Jenkins build `10` from reviewed source `ecbb0d2`. Hosted pipeline
   `92826` passes. Both platform images pass CLI and unsupported-port checks, with all six
   application source hashes matching. The manifest-list digest is

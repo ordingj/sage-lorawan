@@ -7,10 +7,13 @@
 - [x] Publish and image-qualify `0.2.7`. Jenkins build `10` succeeds from reviewed source
       `ecbb0d2`, and hosted pipeline `92826` passes. Both published platform images pass CLI,
       source-hash and unsupported-port checks. Keep 0.2.5 and 0.2.6 registry digests unchanged.
-- [ ] Pass the live `0.2.7` canary, then verify cutover. Require ten uninterrupted minutes,
-      at least two known unsupported-port events filtered normally and the zero-error gate.
-      Preserve production 0.2.5, Tracker and rollback. Verify the previous writer stops and
-      fresh destination records appear after cutover.
+- [x] Activate `0.2.7` after the user accepts the clean 3,019-second live canary. Its one
+      filtered event does not pass the original two-event gate. Preserve that result and the
+      explicit acceptance. Job `5792` is suspended, and native checks prove the old writer stops
+      before job `5871` starts. The exact published image is the sole native writer. Fresh
+      destination readback verifies 112 records from 12 source events across nine devices,
+      with complete identity, expected units and no invalid sentinels. Keep Tracker on 0.2.5
+      and retain the old spec and job for rollback. Local loader recovery remains separate.
 
 ## Python 3.14 release
 
