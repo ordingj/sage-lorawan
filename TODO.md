@@ -1,5 +1,13 @@
 # TODO
 
+- [x] Fix the unsupported SDI-12 empty-object ordering in candidate `0.2.7`. Replay the exact
+      rejected archive events, preserve valid outputs, verify acknowledgement without publication,
+      and keep other empty objects invalid. All 40 tests, lint, native image build and CLI smoke
+      checks pass. Publication and live qualification remain separate.
+- [ ] Publish and qualify `0.2.7`, then activate only after a passing live canary. Preserve
+      production `0.2.5`, Tracker, rollback, source identity and the zero-error gate. Verify the
+      previous writer stops and fresh destination records appear after cutover.
+
 ## Python 3.14 release
 
 - [x] Publish version `0.2.6` with the qualified Python 3.14.7 base and HTTP response cleanup.

@@ -115,6 +115,11 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
     if not isinstance(decoded, Mapping):
         raise PayloadError("ChirpStack uplink object must be a decoded JSON object")
     base_metadata = _measurement_metadata(decoded_payload, device_info)
+    device_name = device_info["deviceName"]
+    if _SDI12_DEVICE_PATTERN.fullmatch(device_name) is not None and _finite_number(
+        decoded_payload.get("fPort")
+    ) not in {2.0, 5.0, 100.0}:
+        return ()
 
     normalized_fields: list[tuple[str, bool | int | float | str]] = []
     normalized_values: dict[str, bool | int | float | str] = {}
@@ -131,7 +136,6 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
     normalized_fields = _sanitize_sensor_measurements(
         normalized_fields,
         device_info,
-        decoded_payload,
     )
     normalized_values = dict(normalized_fields)
 
@@ -148,21 +152,12 @@ def measurements_from_payload(payload: bytes | str) -> tuple[SageMeasurement, ..
 def _sanitize_sensor_measurements(
     fields: list[tuple[str, bool | int | float | str]],
     device_info: Mapping[str, Any],
-    payload: Mapping[str, Any],
 ) -> list[tuple[str, bool | int | float | str]]:
     """Apply the external-sink sentinel policy before Sage publication."""
 
     device_name = device_info.get("deviceName")
     if not isinstance(device_name, str):
         return fields
-    f_port = _finite_number(payload.get("fPort"))
-    if _SDI12_DEVICE_PATTERN.fullmatch(device_name) is not None and f_port not in {
-        2.0,
-        5.0,
-        100.0,
-    }:
-        return []
-
     sanitized = list(fields)
     if _SDI12_DEVICE_PATTERN.fullmatch(device_name) is not None:
         sanitized = [

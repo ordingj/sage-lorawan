@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-13
+
+- Prepare candidate `0.2.7`. Apply the existing unsupported SDI-12 port filter before
+  empty-object validation. Exact replay identifies both rejected events as deliberately empty
+  FPort 6 objects. Both now return no measurements. Nearby FPort 2 outputs retain exact hashes.
+  Keep supported-port and unrelated empty objects invalid. A filtered delivery is acknowledged
+  without publishing. Preserve codecs, raw archives, source timestamps and all canary gates.
+  All 40 tests, lint, native image build and CLI smoke checks pass. Keep production and
+  Tracker on `0.2.5` pending publication and live qualification.
+
 ## 0.2.6 - 2026-11-12
 
 - Publish reviewed source `df193ac745d0b079fa3efcb55b1dc1acc6f36af3` through Jenkins build 9.

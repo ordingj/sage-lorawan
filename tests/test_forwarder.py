@@ -191,6 +191,28 @@ def test_payload_withholds_invalid_sdi_port_and_battery_measurements() -> None:
     } == {"data_sum": "valid"}
 
 
+@pytest.mark.parametrize("port", [3, 6])
+def test_payload_withholds_intentionally_empty_unsupported_sdi_ports(port: int) -> None:
+    """The installed codec's empty unsupported-port object remains a normal filter."""
+    payload = _payload()
+    payload["deviceInfo"]["deviceName"] = "SDI-12-LS-US915-4"
+    payload["fPort"] = port
+    payload["object"] = {}
+
+    assert measurements_from_payload(json.dumps(payload)) == ()
+
+
+def test_payload_rejects_empty_other_device_on_the_same_port() -> None:
+    """The SDI-12 policy must not admit unrelated empty decoded objects."""
+    payload = _payload()
+    payload["deviceInfo"]["deviceName"] = "other-device"
+    payload["fPort"] = 6
+    payload["object"] = {}
+
+    with pytest.raises(PayloadError, match="contains no scalar measurements"):
+        measurements_from_payload(json.dumps(payload))
+
+
 def test_payload_matches_remaining_documented_sensor_sentinel_policy() -> None:
     payload = _payload()
     payload["deviceInfo"]["deviceName"] = "SE0X-LS-1"
@@ -437,6 +459,21 @@ def test_runtime_does_not_ack_when_sage_publication_fails() -> None:
     assert mqtt.client.acknowledgements == []
 
 
+def test_runtime_acknowledges_withheld_empty_uplink_without_publishing() -> None:
+    """A known unsupported-port envelope needs no publication before its PUBACK."""
+    payload = _payload()
+    payload["fPort"] = 6
+    payload["object"] = {}
+    mqtt = _FakeMqtt()
+    publisher = _Publisher()
+    forwarder = MqttForwarder(mqtt, publisher, ForwarderSettings(host="192.168.1.200"))
+    assert mqtt.client is not None
+
+    assert forwarder.process_message(PendingMessage(19, 1, json.dumps(payload).encode())) == 0
+    assert publisher.calls == []
+    assert mqtt.client.acknowledgements == [(19, 1)]
+
+
 def test_runtime_stops_after_a_rejected_mqtt_connection() -> None:
     mqtt = _FakeMqtt()
     forwarder = MqttForwarder(
@@ -470,7 +507,7 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "app.main"]' in dockerfile
     assert "__pycache__/" in dockerignore
     assert manifest["name"] == "ihv-cenic-chirpstack-devices"
-    assert manifest["version"] == "0.2.6"
+    assert manifest["version"] == "0.2.7"
     assert manifest["source"]["architectures"] == ["linux/amd64", "linux/arm64"]
     assert job["nodes"] == {"H02A": True}
     plugin = job["plugins"][0]
@@ -480,7 +517,7 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert "ihv-sage-h02a" in plugin["pluginSpec"]["args"]
     canary_args = canary_job["plugins"][0]["pluginSpec"]["args"]
     assert (
-        "ihv-cenic-chirpstack-devices:0.2.6" in canary_job["plugins"][0]["pluginSpec"]["image"]
+        "ihv-cenic-chirpstack-devices:0.2.7" in canary_job["plugins"][0]["pluginSpec"]["image"]
     )
     assert canary_job["nodes"] == {"H02A": True}
     assert "ihv-sage-h02a-canary" in canary_args

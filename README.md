@@ -1,10 +1,14 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> Published candidate: version `0.2.6` upgrades the Python runtime and closes HTTP error
-> responses. Jenkins build `9` publishes reviewed source `df193ac` for AMD64 and ARM64.
-> This publication does not activate a production workload. A new live canary remains required.
+> Candidate `0.2.7` applies the existing unsupported SDI-12 port policy before empty-object
+> validation. Exact archive replay filters both rejected FPort 6 events and preserves valid
+> measurements. Publication and a passing live canary remain required before activation.
 
-Published image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.6`.
+The fix changes only the order of the existing checks. Valid measurements keep their values,
+source times and metadata. Both archived FPort 6 events now return no records. The nearby
+FPort 2 controls retain their exact output hashes. Other empty decoded objects remain errors.
+
+Previously published image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.6`.
 
 Manifest-list digest: `sha256:5b6844902e7d5c552e6b07d8cee2e39a1a4f36eb4da79b88eb2bdb7172fa4a42`.
 Independent image reads verify both architectures, Python 3.14.7, user 10001 and all six
@@ -118,13 +122,13 @@ their normalized `_tag` suffixes.
 Known physical measurements also carry the plural `meta.units` field consumed by the Sage
 portal. The forwarder currently assigns:
 
-| Measurement family                                      | `meta.units` |
-| ------------------------------------------------------- | ------------ |
-| Battery level / `batv`                                  | `%` / `V`    |
-| CO2 / relative humidity / temperature                   | `ppm` / `%RH` / `°C` |
-| EM500-CO2 barometric pressure / EM500-PP pipe pressure  | `hPa` / `kPa` |
-| Soil conductivity / temperature / water content         | `µS/cm` / `°C` / `%` |
-| Apogee UV-A irradiance                                  | `W/m²`       |
+| Measurement family                                     | `meta.units`         |
+| ------------------------------------------------------ | -------------------- |
+| Battery level / `batv`                                 | `%` / `V`            |
+| CO2 / relative humidity / temperature                  | `ppm` / `%RH` / `°C` |
+| EM500-CO2 barometric pressure / EM500-PP pipe pressure | `hPa` / `kPa`        |
+| Soil conductivity / temperature / water content        | `µS/cm` / `°C` / `%` |
+| Apogee UV-A irradiance                                 | `W/m²`               |
 
 SenseCAP S2103 indexed measurement values receive `°C`, `%RH`, or `ppm` by their sibling
 measurement ID. The same unit policy covers numbered soil probes and Milesight historical
@@ -209,10 +213,11 @@ current publishing workflow. The `homepage` in `sage.yaml` points to that exact 
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
 `job.canary.yaml` is the bounded dry-run template. `job.yaml` is the production template. Both
-name different release stages: canary `0.2.6` and accepted production `0.2.5`. The accepted
+name different release stages: canary `0.2.7` and accepted production `0.2.5`. The accepted
 canary is job `5791`. The retained record names
 production job `5792` with the stable `ihv-sage-h02a` client ID. The Python base update is
-published as `0.2.6`. A new live canary must pass before production activation.
+published as `0.2.6`. The FPort 6 ordering fix is candidate `0.2.7`. It requires publication
+and a passing live canary before production activation.
 
 Production verification established:
 
