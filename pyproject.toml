@@ -1,7 +1,7 @@
 [tool.ruff]
 line-length = 95
 src = ["app", "tests"]
-target-version = "py312"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F"]

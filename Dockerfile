@@ -1,4 +1,4 @@
-FROM python:3.12-alpine3.22@sha256:a190708a2dec1bd18b1decb539f8e8f5407abaa9bf39cacda583f7f8c11db322
+FROM python:3.14.7-alpine3.24@sha256:05b2b8b732ecd268fee8727a369f936f022d1321b59befd13c30ede22769dcdc
 
 RUN addgroup -g 10001 -S plugin && adduser -u 10001 -S -G plugin plugin
 

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Python runtime qualification
+
+- Use the digest-pinned IHV Python 3.14.7 Alpine base for the next build. Set the local
+  development target to Python 3.14 and keep the existing dependency pins.
+- Close HTTP error response bodies after missing records, terminal errors and retry attempts.
+  Keep the existing authentication, retry limits, request methods and status handling.
+- Align the README with the retained 0.2.5 rollout record. Keep the next image unpublished
+  until the release checks pass. A new canary must pass before production activation.
+
 ### Added
 
 - Standalone `ihv-cenic-chirpstack-devices` Sage edge app for forwarding decoded IHV-CENIC

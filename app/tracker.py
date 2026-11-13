@@ -294,22 +294,24 @@ class SageHttpTransport:
                     decoded = json.load(response)
                 break
             except HTTPError as error:
-                if error.code == 404 and method == "GET":
-                    return None
-                if error.code in {429, 500, 502, 503, 504} and attempt < len(
-                    _HTTP_RETRY_DELAYS_SECONDS
-                ):
-                    self._wait_to_retry(method, path, attempt, f"HTTP {error.code}")
-                    continue
-                detail = (
-                    error.read().decode("utf-8", errors="replace")[:500]
-                    if error.fp is not None
-                    else "no response body"
-                )
-                raise RuntimeError(
-                    f"Sage inventory request {method} {path} failed with HTTP {error.code}: "
-                    f"{detail}"
-                ) from error
+                with error:
+                    if error.code == 404 and method == "GET":
+                        return None
+                    if error.code in {429, 500, 502, 503, 504} and attempt < len(
+                        _HTTP_RETRY_DELAYS_SECONDS
+                    ):
+                        self._wait_to_retry(method, path, attempt, f"HTTP {error.code}")
+                        continue
+                    detail = (
+                        error.read().decode("utf-8", errors="replace")[:500]
+                        if error.fp is not None
+                        else "no response body"
+                    )
+                    raise RuntimeError(
+                        f"Sage inventory request {method} {path} "
+                        f"failed with HTTP {error.code}: "
+                        f"{detail}"
+                    ) from error
             except URLError as error:
                 if attempt < len(_HTTP_RETRY_DELAYS_SECONDS):
                     self._wait_to_retry(method, path, attempt, str(error.reason))

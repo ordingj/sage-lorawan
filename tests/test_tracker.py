@@ -465,3 +465,37 @@ def test_tracker_deployment_is_h02a_scoped_and_secret_backed() -> None:
     assert secrets == {"django-token", "ihv-cenic-chirpstack-api"}
     assert container["securityContext"]["readOnlyRootFilesystem"] is True
     assert container["securityContext"]["runAsNonRoot"] is True
+
+
+@pytest.mark.parametrize("method,code", [("GET", 404), ("POST", 404), ("POST", 503)])
+def test_http_transport_closes_each_error_response(
+    monkeypatch: Any, method: str, code: int
+) -> None:
+    """Missing, terminal and retried HTTP responses release their response bodies."""
+    bodies: list[BytesIO] = []
+
+    def fail(_request: object, *, timeout: int) -> BytesIO:
+        body = BytesIO(b"not available")
+        bodies.append(body)
+        raise HTTPError("https://example.invalid/records/", code, "unavailable", {}, body)
+
+    monkeypatch.setattr("app.tracker.urlopen", fail)
+    monkeypatch.setattr("app.tracker.time.sleep", lambda _delay: None)
+    try:
+        if method == "GET":
+            assert (
+                SageHttpTransport("https://example.invalid", "token").request(
+                    method, "records/"
+                )
+                is None
+            )
+        else:
+            with pytest.raises(RuntimeError, match=f"HTTP {code}"):
+                SageHttpTransport("https://example.invalid", "token").request(
+                    method, "records/"
+                )
+        assert all(body.closed for body in bodies)
+        assert len(bodies) == (6 if code == 503 else 1)
+    finally:
+        for body in bodies:
+            body.close()

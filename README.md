@@ -1,16 +1,18 @@
 # Sage LoRaWAN Forwarder for IHV-CENIC
 
-> **Status:** version `0.2.4` is prepared for publication with the complete documented
-> sensor-sentinel policy and Tracker API contract repairs. Production forwarder version `0.2.3`
-> remains active on H02A until the new image passes its bounded canary.
+> Release record: version `0.2.5` replaces `0.2.4`. The retained rollout record names
+> production forwarder job `5792` and the inventory-only Tracker on H02A. This maintenance
+> change does not publish a new image or verify the current production state.
 
-Prepared image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.4`.
+Recorded image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.5`.
+
+The next build uses the digest-pinned IHV Python 3.14.7 Alpine base. Dependency installation,
+application tests and a native container smoke check must pass before publication.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
 application-uplink topic. Its default mode republishes decoded measurements through PyWaggle
 after applying documented sensor-availability rules. The optional Tracker mode only registers
-those devices in Sage's LoRaWAN inventory and is not required for measurement forwarding, so it
-was not included in this rollout. Neither mode changes device codecs, ChirpStack integrations,
+those devices in Sage's LoRaWAN inventory and is not required for measurement forwarding, as the recorded deployment uses a separate Tracker. Neither mode changes device codecs, ChirpStack integrations,
 or the existing ThingsBoard, InfluxDB, and PostgreSQL delivery paths.
 
 The stock Sage `lorawan-listener` is not a safe drop-in for this fleet. It expects decoded
@@ -48,11 +50,11 @@ Read-only checks from H02A on 2026-09-01 established:
 - The Sage portal and Data API report current H02A system data, but the job inventory contained
   no existing H02A edge job at the time of inspection.
 
-ECR version `0.2.3` was built for both `linux/amd64` and `linux/arm64` from reviewed source
-commit `84f9a8b`. Its manifest-list digest is
-`sha256:340cace84379d3f19c3ec875e1fc5051cdddbc7d1b9b1ff5d1237e479a198c01`. H02A canary job
-`5788` completed an uninterrupted 11-minute dry-run before suspension, and production job
-`5789` now publishes through `0.2.3`.
+The retained release record identifies `0.2.5` as the accepted replacement for `0.2.4`. Jenkins
+build `8` published commit `78f7ab1` for AMD64 and ARM64 at manifest-list digest
+`sha256:587d318403966ad82010378fbda6cae81c37094982a37e0bd2e51c0d05c6f498`. Canary `5791` passed
+before production job `5792` replaced suspended job `5789`. These are recorded rollout facts.
+Refresh live state before another release.
 
 Recheck the address and port from H02A before deployment; they are observed runtime facts, not
 configuration discovery:
@@ -176,10 +178,10 @@ losing the inventory event.
 
 ## Validate locally
 
-Python 3.12+, Docker, and `make` are expected:
+Python 3.14+, Docker, and `make` are expected:
 
 ```bash
-uv venv --python 3.12
+uv venv --python 3.14
 uv pip install --python .venv/bin/python -r requirements-dev.txt
 make all
 ```
@@ -201,10 +203,10 @@ Sage's ECR source is the public
 current publishing workflow. The `homepage` in `sage.yaml` points to that exact source. Keep
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
-`job.canary.yaml` is the bounded dry-run template; `job.yaml` is the production template. Both
-target prepared version `0.2.5`. Canary job `5788` is suspended after its earlier clean bounded
-run. Production job `5789` remains the sole active forwarder on version `0.2.3` and uses the
-stable `ihv-sage-h02a` client ID until the `0.2.5` rollout is accepted.
+`job.canary.yaml` is the bounded dry-run template. `job.yaml` is the production template. Both
+name the recorded release `0.2.5`. The accepted canary is job `5791`. The retained record names
+production job `5792` with the stable `ihv-sage-h02a` client ID. The Python base update remains
+unpublished until the release checks pass. A new canary must pass before production activation.
 
 Production verification established:
 
