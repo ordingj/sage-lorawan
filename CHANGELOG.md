@@ -4,6 +4,12 @@
 
 ### Python runtime qualification
 
+- Prepare candidate version 0.2.6 and its canary template. Keep the production job and Tracker
+  templates on accepted version 0.2.5 until the new canary passes.
+
+- Run GitLab CI with the same pinned Python 3.14.7 Alpine image as the application build.
+  Keep the validation commands and warning policy unchanged.
+
 - Use the digest-pinned IHV Python 3.14.7 Alpine base for the next build. Set the local
   development target to Python 3.14 and keep the existing dependency pins.
 - Close HTTP error response bodies after missing records, terminal errors and retry attempts.

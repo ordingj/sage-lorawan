@@ -6,7 +6,7 @@
 
 Recorded image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.5`.
 
-The next build uses the digest-pinned IHV Python 3.14.7 Alpine base. Dependency installation,
+Candidate version `0.2.6` uses the digest-pinned IHV Python 3.14.7 Alpine base. Dependency installation,
 application tests and a native container smoke check must pass before publication.
 
 This Sage edge app subscribes node H02A to the existing IHV-CENIC ChirpStack MQTT
@@ -204,7 +204,8 @@ current publishing workflow. The `homepage` in `sage.yaml` points to that exact 
 the mirror's `main` branch synchronized with reviewed GitLab commits before every ECR build.
 
 `job.canary.yaml` is the bounded dry-run template. `job.yaml` is the production template. Both
-name the recorded release `0.2.5`. The accepted canary is job `5791`. The retained record names
+name different release stages: canary `0.2.6` and accepted production `0.2.5`. The accepted
+canary is job `5791`. The retained record names
 production job `5792` with the stable `ihv-sage-h02a` client ID. The Python base update remains
 unpublished until the release checks pass. A new canary must pass before production activation.
 

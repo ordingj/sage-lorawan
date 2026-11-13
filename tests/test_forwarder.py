@@ -470,7 +470,7 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert 'ENTRYPOINT ["python3", "-m", "app.main"]' in dockerfile
     assert "__pycache__/" in dockerignore
     assert manifest["name"] == "ihv-cenic-chirpstack-devices"
-    assert manifest["version"] == "0.2.5"
+    assert manifest["version"] == "0.2.6"
     assert manifest["source"]["architectures"] == ["linux/amd64", "linux/arm64"]
     assert job["nodes"] == {"H02A": True}
     plugin = job["plugins"][0]
@@ -480,7 +480,7 @@ def test_bundle_pins_contract_and_targets_only_h02a() -> None:
     assert "ihv-sage-h02a" in plugin["pluginSpec"]["args"]
     canary_args = canary_job["plugins"][0]["pluginSpec"]["args"]
     assert (
-        "ihv-cenic-chirpstack-devices:0.2.5" in canary_job["plugins"][0]["pluginSpec"]["image"]
+        "ihv-cenic-chirpstack-devices:0.2.6" in canary_job["plugins"][0]["pluginSpec"]["image"]
     )
     assert canary_job["nodes"] == {"H02A": True}
     assert "ihv-sage-h02a-canary" in canary_args
