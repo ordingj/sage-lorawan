@@ -1,5 +1,12 @@
 # TODO
 
+- [x] Record completed local backlog recovery. All 431,205 originals are accounted for: 110,641
+      receive cumulative exact database verification and 320,564 older records remain archived.
+      The final 8,955-record tail and 104 fresh observations pass. The queue is empty, helpers
+      are removed, and rule query access works. Native `GOGC=50` qualification preserves the
+      original image, limits, claim and retention. Keep all raw history. Central cloud-text
+      verification and an isolated scheduler subscription EOF remain separate IHV follow-ups.
+
 - [x] Record the local backfill stop. Completed receipts verify 101,686 records. Another
       8,955 records remain outside completion. All 431,205 original messages stay archived.
       Both helpers are removed. The live loader has an empty queue and zero OOM events.

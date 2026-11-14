@@ -43,13 +43,18 @@ Fresh readback returns 112 exact-version records from 12 source events across ni
 All source identities and expected physical units pass. No invalid sentinel reaches the destination.
 The stable MQTT client and queued deliveries are preserved.
 
-The patched node-local InfluxDB loader remains active and healthy with one consumer and
-prefetch 250. Historical backfill verifies 101,686 records before its memory guard stops it.
-A bounded resumption in groups of 64 also stops at that unchanged guard. All 431,205 captured
-originals remain archived, and 8,955 tail records remain outside completed receipts. Both
-helpers are removed. The live queue is empty, unchanged containers have zero restarts, and
-database OOM counters remain zero. Qualify native memory headroom before more replay.
-Keep the 3 GiB stop, 4 GiB hard limit, two-day retention and 5 GB claim unchanged.
+The captured node-local backlog recovery passes after native memory qualification. All 431,205
+originals reconcile to 110,641 cumulative database-verified source records and 320,564 older
+archived records. These counts are not a current database point count. The final 8,955-record
+tail passes exact readback, including 8,705 missing writes. All raw originals remain archived.
+Independent checks verify 104 fresh observations from 13 source events with complete effective
+tags, exact values and nanosecond timestamps. The queue is empty and all helpers are removed.
+The configured rule query works with zero database OOM events. The database uses `GOGC=50`
+after native memory and CPU qualification. Its final lifetime memory peak is 1.726 GB under the
+unchanged 3 GiB stop. Preserve the image, 4 GiB hard limit, two-day retention and 5 GB claim.
+Tracker and forwarder keep their containers. The IHV repository retains the qualified receipts
+and recovery report under
+`tmp/tasks/dev/h02a-loader-recovery-2026-11-13/memory-qualification-2026-11-14/`.
 
 Seven cloud-returned text values omit original carriage returns that remain exact locally.
 Public Sage code uses a CSV reader that normalizes CRLF. The matched cohort contains six

@@ -2,6 +2,16 @@
 
 ## 2026-11-14
 
+- Record completed captured backlog recovery after native memory qualification. All 431,205
+  originals reconcile to 110,641 cumulative database-verified source records and 320,564 older
+  archived records. Exact readback passes for all 8,955 remaining records. Verify 104 fresh
+  observations from 13 source events with complete effective tags, values and nanosecond
+  timestamps. The queue is empty and helpers are removed. With the qualified configuration, the
+  observed lifetime memory peak is 1.726 GB under the unchanged 3 GiB stop. Preserve the image,
+  hard limit, retention, claim and all raw history. No application source or image changes
+  accompany these records. Central cloud-text proof and an isolated scheduler stream EOF remain
+  separate follow-ups in the IHV repository.
+
 - Record the safe historical backfill stop after 101,686 verified records. A bounded
   64-record resumption also reaches the unchanged memory guard. All 431,205 originals remain
   archived, with 8,955 tail records outside completed receipts. Both helpers are removed.
