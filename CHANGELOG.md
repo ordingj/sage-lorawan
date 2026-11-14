@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-14
+
+- Record the safe historical backfill stop after 101,686 verified records. A bounded
+  64-record resumption also reaches the unchanged memory guard. All 431,205 originals remain
+  archived, with 8,955 tail records outside completed receipts. Both helpers are removed.
+  The primary loader remains healthy with an empty queue and zero OOM events. Keep native
+  memory qualification required before more replay. Public Sage CSV normalization does not
+  explain the standalone-carriage-return case, so central verification remains required.
+
 ## 2026-11-13
 
 - Record patched H02A local loader activation. One consumer has prefetch 250, and the

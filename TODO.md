@@ -1,5 +1,11 @@
 # TODO
 
+- [x] Record the local backfill stop. Completed receipts verify 101,686 records. Another
+      8,955 records remain outside completion. All 431,205 original messages stay archived.
+      Both helpers are removed. The live loader has an empty queue and zero OOM events.
+      Keep replay blocked until native memory qualification passes. Do not change limits.
+      The public CSV mechanism does not explain one standalone carriage return. Verify the
+      deployed central query code and stored values in the IHV task.
 - [x] Record qualified node-local loader activation. The patched loader has one consumer
       and prefetch 250. All 431,205 captured messages have a verified durable archive.
       Independent source checks verify 142 fresh local observations. The rule query works,

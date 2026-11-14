@@ -43,16 +43,21 @@ Fresh readback returns 112 exact-version records from 12 source events across ni
 All source identities and expected physical units pass. No invalid sentinel reaches the destination.
 The stable MQTT client and queued deliveries are preserved.
 
-The patched node-local InfluxDB loader is now active with one consumer and prefetch 250.
-All 431,205 captured backlog messages have a verified durable archive. Independent ChirpStack
-source checks verify 142 fresh local observations exactly. The configured rule query works,
-and the waiting queue clears without warnings, errors or restarts. Historical backfill is
-running with unchanged two-day retention and strict disk and memory stops. Older originals
-remain archived. Full backfill completion and its helper cleanup remain required.
+The patched node-local InfluxDB loader remains active and healthy with one consumer and
+prefetch 250. Historical backfill verifies 101,686 records before its memory guard stops it.
+A bounded resumption in groups of 64 also stops at that unchanged guard. All 431,205 captured
+originals remain archived, and 8,955 tail records remain outside completed receipts. Both
+helpers are removed. The live queue is empty, unchanged containers have zero restarts, and
+database OOM counters remain zero. Qualify native memory headroom before more replay.
+Keep the 3 GiB stop, 4 GiB hard limit, two-day retention and 5 GB claim unchanged.
 
-Seven cloud-returned text values omit original carriage returns. The local database preserves
-those values exactly. The responsible central query stage remains unknown. The IHV repository
-tracks recovery in `sage/H02A_INFLUX_RECOVERY.md` and the retained November 13 recovery record.
+Seven cloud-returned text values omit original carriage returns that remain exact locally.
+Public Sage code uses a CSV reader that normalizes CRLF. The matched cohort contains six
+CRLF cases and one standalone carriage return. That reader mechanism alone does not explain
+all seven. The deployed query version and central stored values remain unverified.
+The IHV repository retains the recovery stop and source-research records under
+`tmp/tasks/dev/h02a-loader-recovery-2026-11-13/resume-2026-11-14/`.
+
 The retained `0.2.6` publication record follows.
 
 Previously published image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.6`.
