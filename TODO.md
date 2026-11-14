@@ -1,5 +1,12 @@
 # TODO
 
+- [x] Record qualified node-local loader activation. The patched loader has one consumer
+      and prefetch 250. All 431,205 captured messages have a verified durable archive.
+      Independent source checks verify 142 fresh local observations. The rule query works,
+      and the waiting queue clears with zero observed warnings, errors or restarts. Keep
+      historical backfill and helper cleanup required in the IHV recovery task. Retain older
+      originals outside the unchanged two-day bucket. Track seven cloud text responses that
+      omit original carriage returns separately from the passing local-delivery gate.
 - [x] Qualify and roll out Tracker `0.2.7`. The native canary and production startup reconcile
       all 27 devices. Three inventory audits retain every connection ID and hardware link, with
       exactly 27 active connections. Production has 45 live updates across 21 devices and zero

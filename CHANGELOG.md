@@ -2,6 +2,14 @@
 
 ## 2026-11-13
 
+- Record patched H02A local loader activation. One consumer has prefetch 250, and the
+  waiting queue clears without warnings, errors or restarts. All 431,205 captured messages
+  have a verified durable archive. Independent source checks verify all 142 fresh local
+  observations, and the configured rule query works. Historical backfill continues with
+  unchanged retention and strict capacity stops. Keep its completion and helper cleanup
+  required. Classify seven cloud-returned text values that omit source carriage returns,
+  while the local database preserves the originals exactly. The central stage remains unknown.
+
 - Roll out Tracker `0.2.7` after a native H02A canary. Both startups reconcile all 27 devices.
   The canary records 14 live updates across ten devices in 171 seconds. Production records
   45 live updates across 21 devices at the final check. Both have zero warnings, errors or

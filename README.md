@@ -43,8 +43,16 @@ Fresh readback returns 112 exact-version records from 12 source events across ni
 All source identities and expected physical units pass. No invalid sentinel reaches the destination.
 The stable MQTT client and queued deliveries are preserved.
 
-The local InfluxDB loader remains separately paused for data-preserving recovery. This rollout
-qualifies Sage cloud delivery. It does not qualify that loader's native storage or replay.
+The patched node-local InfluxDB loader is now active with one consumer and prefetch 250.
+All 431,205 captured backlog messages have a verified durable archive. Independent ChirpStack
+source checks verify 142 fresh local observations exactly. The configured rule query works,
+and the waiting queue clears without warnings, errors or restarts. Historical backfill is
+running with unchanged two-day retention and strict disk and memory stops. Older originals
+remain archived. Full backfill completion and its helper cleanup remain required.
+
+Seven cloud-returned text values omit original carriage returns. The local database preserves
+those values exactly. The responsible central query stage remains unknown. The IHV repository
+tracks recovery in `sage/H02A_INFLUX_RECOVERY.md` and the retained November 13 recovery record.
 The retained `0.2.6` publication record follows.
 
 Previously published image: `registry.sagecontinuum.org/ordingj/ihv-cenic-chirpstack-devices:0.2.6`.
